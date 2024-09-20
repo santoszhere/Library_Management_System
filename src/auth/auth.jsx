@@ -17,7 +17,7 @@ const ProtectedRoutes = ({ requiredRole = null }) => {
   //   return <Navigate to="/dashboard" />;
   // }
 
-  // if (role === "member" && role === "admin") {
+  // if (role === "member") {
   //   return <Navigate to="/books" />;
   // }
 

@@ -1,4 +1,3 @@
-import React from "react";
 import Navbar from "./components/Navbar";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
@@ -14,6 +13,7 @@ import DashboardUser from "./dashboard/components/DashboardUser";
 import DashboardBook from "./dashboard/components/DashboardBook";
 import CreateBook from "./dashboard/components/CreateBook";
 import EditBook from "./dashboard/components/EditBook";
+import AdvancedSearchPage from "./components/AdvancedSearchPage";
 
 const App = () => {
   const location = useLocation();
@@ -27,6 +27,7 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/sign-in" element={<Login />} />
         <Route path="/sign-up" element={<RegisterForm />} />
+        <Route path="/search" element={<AdvancedSearchPage />} />
 
         <Route element={<ProtectedRoutes />}>
           <Route path="/profile" element={<Profile />} />
