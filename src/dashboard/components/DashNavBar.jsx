@@ -18,8 +18,8 @@ const DashNavBar = () => {
   const handlelogout = async () => {
     const { data } = await AxiosInstance.post("/users/logout", {});
     toast.success(data?.message);
-    dispatch(logoutUser());
     navigate("/");
+    dispatch(logoutUser());
   };
   return (
     <nav className="flex items-center justify-between py-3 px-10">

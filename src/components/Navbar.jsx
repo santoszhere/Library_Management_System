@@ -1,17 +1,61 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { pages, loggedInPages } from "../constants/constants";
+import AxiosInstance from "../config/AxiosInstance";
+import { logoutUser } from "../store/slices/authSlice";
+import toast from "react-hot-toast";
+import { AiOutlineBell } from "react-icons/ai"; // Import the bell icon
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false); // For user profile dropdown
-  const [searchQuery, setSearchQuery] = useState(""); // For search functionality
-  const user = useSelector((state) => state.user); // Redux user state
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const user = useSelector((state) => state.user);
   const navigate = useNavigate();
-  const dropdownRef = useRef(null); // Reference to the dropdown
+  const dropdownRef = useRef(null);
+  const dispatch = useDispatch();
 
-  // Handle search submit
+
+  const notification = [
+    {
+      id: 1,
+      message: "Author arjun added a new book hell cat"
+    },
+    {
+      id: 2,
+      message: 'Author anoj added a new book learn programming '
+    },
+    {
+      id: 3,
+      message: "Author arjun removed a book programming"
+    }, {
+      id: 3,
+      message: "Author arjun removed a book programming"
+    }, {
+      id: 3,
+      message: "Author arjun removed a book programming"
+    }, {
+      id: 3,
+      message: "Author arjun removed a book programming"
+    }, {
+      id: 3,
+      message: "Author arjun removed a book programming"
+    }, {
+      id: 3,
+      message: "Author arjun removed a book programming"
+    }, {
+      id: 3,
+      message: "Author arjun removed a book programming"
+    }, {
+      id: 3,
+      message: "Author arjun removed a book programming"
+    }, {
+      id: 3,
+      message: "Author arjun removed a book programming"
+    }
+  ]
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery) {
@@ -19,7 +63,18 @@ const Navbar = () => {
     }
   };
 
-  // Close dropdown when clicking outside
+  const handleLogout = async () => {
+    try {
+      await AxiosInstance.post("/users/logout", {});
+      dispatch(logoutUser());
+      navigate("/login");
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Failed to logout, please try again.");
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -28,27 +83,27 @@ const Navbar = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownRef]);
 
-  // Array for dropdown options when the user is logged in
   const profileDropdownOptions = [
     { name: "Profile", path: "/profile" },
-    { name: "Logout", path: "/logout" },
+    { name: "Logout", logoutFunction: handleLogout },
   ];
+  const handleShowNotification = () => {
+    navigate("/books")
+    setNotificationOpen(!notificationOpen)
+  }
 
   return (
     <nav className="bg-white shadow">
       <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         <div className="flex items-center">
-          {/* Logo / Branding */}
           <Link to="/" className="text-lg font-semibold">Library Management System</Link>
         </div>
 
-        {/* Search Bar */}
         <form onSubmit={handleSearchSubmit} className="hidden md:flex items-center">
           <input
             type="text"
@@ -65,58 +120,43 @@ const Navbar = () => {
           </button>
         </form>
 
-        {/* Desktop Links / User Profile */}
         <div className="hidden md:flex space-x-4 items-center">
-          {user.isLoggedIn
-            ? (
-              <>
-                {/* Display Links for Logged-in Users */}
-                {loggedInPages.map((page) => (
-                  <NavLink
-                    to={page.path}
-                    key={page.name}
-                    className={({ isActive }) =>
-                      `${isActive ? "text-blue-500" : ""} text-gray-700 hover:text-blue-500`
-                    }
-                  >
-                    {page.name}
-                  </NavLink>
-                ))}
-
-                {/* User Profile with Dropdown */}
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center space-x-2 focus:outline-none"
-                  >
-                    <img
-                      src={user.userData.avatar} // Assuming user has profileImage in the state
-                      alt="User Profile"
-                      className="h-8 w-8 rounded-full"
-                    />
-                  </button>
-
-                  {/* Dropdown */}
-                  {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg py-2 z-10">
-                      {profileDropdownOptions.map((option) => (
-                        <NavLink
-                          key={option.name}
-                          to={option.path}
-                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                          onClick={() => setDropdownOpen(false)}
+          {user.isLoggedIn && (
+            <>
+              <div className="relative mt-2">
+                <button
+                  onClick={() => setNotificationOpen(!notificationOpen)}
+                  className="focus:outline-none"
+                >
+                  <AiOutlineBell className="h-6 w-6 text-gray-700 hover:text-blue-500" />
+                </button>
+                {notificationOpen && (
+                  <div className="absolute -right-5 mt-2 w-80 bg-white shadow-lg rounded-lg py-2 z-20">
+                    <div className="relative max-h-60 overflow-y-auto bg-white shadow-lg rounded-lg py-2 z-20 transition-transform transform duration-200 ease-in-out">
+                      {notification.map(ntf => (
+                        <button
+                          key={ntf.id}
+                          className="block w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-200 rounded-lg transition-colors duration-200 ease-in-out"
+                          onClick={handleShowNotification}
                         >
-                          {option.name}
-                        </NavLink>
+                          {ntf.message}
+                        </button>
                       ))}
+                      {notification.length === 0 && (
+                        <div className="px-4 py-3 text-gray-500 text-center">
+                          No notifications available.
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </>
-            )
-            : (
-              // Non-Logged-in Links
-              pages.map((page) => (
+                  </div>
+                )}
+
+              </div>
+            </>
+          )}
+          {user.isLoggedIn ? (
+            <>
+              {loggedInPages.map((page) => (
                 <NavLink
                   to={page.path}
                   key={page.name}
@@ -126,12 +166,57 @@ const Navbar = () => {
                 >
                   {page.name}
                 </NavLink>
-              ))
-            )
-          }
+              ))}
+
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center space-x-2 focus:outline-none"
+                >
+                  <img
+                    src={user.userData.avatar}
+                    alt="User Profile"
+                    className="h-8 w-8 rounded-full"
+                  />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg py-2 z-10">
+                    {profileDropdownOptions.map((option) => (
+                      <button
+                        key={option.name}
+                        className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          if (option.logoutFunction) {
+                            option.logoutFunction();
+                          } else {
+                            navigate(option.path);
+                          }
+                        }}
+                      >
+                        {option.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            pages.map((page) => (
+              <NavLink
+                to={page.path}
+                key={page.name}
+                className={({ isActive }) =>
+                  `${isActive ? "text-blue-500" : ""} text-gray-700 hover:text-blue-500`
+                }
+              >
+                {page.name}
+              </NavLink>
+            ))
+          )}
         </div>
 
-        {/* Mobile Menu Toggle */}
         <div className="md:hidden">
           <button onClick={() => setIsOpen(!isOpen)} className="focus:outline-none">
             <svg
@@ -152,47 +237,11 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden">
-          {user.isLoggedIn
-            ? (
-              <>
-                {loggedInPages.map((page) => (
-                  <NavLink
-                    key={page.name}
-                    to={page.path}
-                    className="block text-gray-700 hover:text-blue-500 px-4 py-2"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {page.name}
-                  </NavLink>
-                ))}
-                <div className="block text-gray-700 px-4 py-2">
-                  <div className="flex items-center space-x-2">
-                    <img
-                      src={user.userData.avatar}
-                      alt="User Profile"
-                      className="h-8 w-8 rounded-full"
-                    />
-                    <span>{user.name}</span>
-                  </div>
-
-                  {profileDropdownOptions.map((option) => (
-                    <NavLink
-                      key={option.name}
-                      to={option.path}
-                      className="block text-gray-700 hover:text-blue-500 px-4 py-2"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {option.name}
-                    </NavLink>
-                  ))}
-                </div>
-              </>
-            )
-            : (
-              pages.map((page) => (
+          {user.isLoggedIn ? (
+            <>
+              {loggedInPages.map((page) => (
                 <NavLink
                   key={page.name}
                   to={page.path}
@@ -201,9 +250,47 @@ const Navbar = () => {
                 >
                   {page.name}
                 </NavLink>
-              ))
-            )
-          }
+              ))}
+              <div className="block text-gray-700 px-4 py-2">
+                <div className="flex items-center space-x-2">
+                  <img
+                    src={user.userData.avatar}
+                    alt="User Profile"
+                    className="h-8 w-8 rounded-full"
+                  />
+                  <span>{user.name}</span>
+                </div>
+
+                {profileDropdownOptions.map((option) => (
+                  <button
+                    key={option.name}
+                    className="block w-full text-left text-gray-700 hover:text-blue-500 px-4 py-2"
+                    onClick={() => {
+                      setIsOpen(false);
+                      if (option.logoutFunction) {
+                        option.logoutFunction();
+                      } else {
+                        navigate(option.path);
+                      }
+                    }}
+                  >
+                    {option.name}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            pages.map((page) => (
+              <NavLink
+                key={page.name}
+                to={page.path}
+                className="block text-gray-700 hover:text-blue-500 px-4 py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                {page.name}
+              </NavLink>
+            ))
+          )}
 
           <form onSubmit={handleSearchSubmit} className="flex items-center px-4 py-2">
             <input

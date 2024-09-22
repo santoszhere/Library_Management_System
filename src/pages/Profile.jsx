@@ -2,21 +2,31 @@ import React, { useEffect, useState } from "react";
 import AxiosInstance from "../config/AxiosInstance";
 import { FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { fetchCurrentUser } from "../store/slices/authSlice";
 
 const Profile = () => {
+  const dispatch = useDispatch()
   const [userProfile, setUserProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ username: "", email: "", avatar: "" });
+  const [editData, setEditData] = useState({
+    username: "",
+    email: "",
+    avatar: "",
+    oldPassword: "",
+    newPassword: "",
+  });
 
   const getUserProfile = async () => {
     try {
       const { data } = await AxiosInstance.get("/users/current-user");
       setUserProfile(data.data);
-      console.log(data)
       setEditData({
         username: data.data.username,
         email: data.data.email,
         avatar: data.data.avatar,
+        oldPassword: "",
+        newPassword: "",
       });
     } catch (error) {
       console.error("Error fetching user profile:", error);
@@ -27,23 +37,26 @@ const Profile = () => {
     try {
       const { data } = await AxiosInstance.post(`/borrow/books/${id}/return`);
       getUserProfile();
+
       if (!data.data) {
-        toast.error("Failed to return book")
+        toast.error("Failed to return book");
       }
-      toast.success(data.message)
+      toast.success(data.message);
+      dispatch(fetchCurrentUser())
     } catch (error) {
       console.error("Error returning book:", error);
     }
   };
-
+  ``
   const handleEditSubmit = async () => {
     try {
       await AxiosInstance.put("/users/update", editData);
       getUserProfile();
       setIsEditing(false);
-      alert("Profile updated successfully.");
+      toast.success("Profile updated successfully.");
     } catch (error) {
       console.error("Error updating profile:", error);
+      toast.error("Failed to update profile.");
     }
   };
 
@@ -54,7 +67,7 @@ const Profile = () => {
   if (!userProfile) return <div>Loading...</div>;
 
   const { username, email, avatar, role, borrowedBooks, fines } = userProfile;
-  console.log(borrowedBooks)
+
   return (
     <div className="container mx-auto p-6">
       {/* User Info Section */}
@@ -71,11 +84,31 @@ const Profile = () => {
                 className="block w-full md:w-auto text-xl font-semibold border border-gray-300 p-2 rounded mb-2"
                 value={editData.username}
                 onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                placeholder="Username"
               />
               <input
                 className="block w-full md:w-auto text-gray-600 border border-gray-300 p-2 rounded mb-2"
                 value={editData.email}
                 onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                placeholder="Email"
+              />
+
+              {/* Old Password Field */}
+              <input
+                type="password"
+                className="block w-full md:w-auto border border-gray-300 p-2 rounded mb-2"
+                value={editData.oldPassword}
+                onChange={(e) => setEditData({ ...editData, oldPassword: e.target.value })}
+                placeholder="Old Password"
+              />
+
+              {/* New Password Field */}
+              <input
+                type="password"
+                className="block w-full md:w-auto border border-gray-300 p-2 rounded mb-2"
+                value={editData.newPassword}
+                onChange={(e) => setEditData({ ...editData, newPassword: e.target.value })}
+                placeholder="New Password"
               />
             </>
           ) : (
@@ -84,7 +117,9 @@ const Profile = () => {
               <p className="text-gray-600 mb-2">{email}</p>
             </>
           )}
-          <p className="text-gray-500">{role.charAt(0).toUpperCase() + role.slice(1)}</p>
+          <p className="text-gray-500">
+            {role.charAt(0).toUpperCase() + role.slice(1)}
+          </p>
         </div>
         <div className="flex justify-center md:justify-end mt-4 md:mt-0 space-x-2">
           {isEditing ? (
