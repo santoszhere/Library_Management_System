@@ -5,57 +5,22 @@ import { pages, loggedInPages } from "../constants/constants";
 import AxiosInstance from "../config/AxiosInstance";
 import { logoutUser } from "../store/slices/authSlice";
 import toast from "react-hot-toast";
-import { AiOutlineBell } from "react-icons/ai"; // Import the bell icon
+import { AiOutlineBell } from "react-icons/ai";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [notifications, setNotifications] = useState([]);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const dispatch = useDispatch();
 
-
-  const notification = [
-    {
-      id: 1,
-      message: "Author arjun added a new book hell cat"
-    },
-    {
-      id: 2,
-      message: 'Author anoj added a new book learn programming '
-    },
-    {
-      id: 3,
-      message: "Author arjun removed a book programming"
-    }, {
-      id: 3,
-      message: "Author arjun removed a book programming"
-    }, {
-      id: 3,
-      message: "Author arjun removed a book programming"
-    }, {
-      id: 3,
-      message: "Author arjun removed a book programming"
-    }, {
-      id: 3,
-      message: "Author arjun removed a book programming"
-    }, {
-      id: 3,
-      message: "Author arjun removed a book programming"
-    }, {
-      id: 3,
-      message: "Author arjun removed a book programming"
-    }, {
-      id: 3,
-      message: "Author arjun removed a book programming"
-    }, {
-      id: 3,
-      message: "Author arjun removed a book programming"
-    }
-  ]
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery) {
@@ -67,11 +32,20 @@ const Navbar = () => {
     try {
       await AxiosInstance.post("/users/logout", {});
       dispatch(logoutUser());
-      navigate("/login");
+      navigate("/sign-in");
       toast.success("Logged out successfully");
     } catch (error) {
       console.error("Logout failed:", error);
       toast.error("Failed to logout, please try again.");
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const { data } = await AxiosInstance.get('/notification/get-notification');
+      setNotifications(data.data);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
     }
   };
 
@@ -88,14 +62,37 @@ const Navbar = () => {
     };
   }, [dropdownRef]);
 
+  useEffect(() => {
+    if (user.isLoggedIn) {
+      socket.emit("join", user.userData.id);
+      fetchNotifications();
+
+      socket.on("bookNotification", (notification) => {
+        console.log("Notification received:", notification);
+        setNotifications((prev) => [...prev, notification]);
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [user]);
+
+
   const profileDropdownOptions = [
     { name: "Profile", path: "/profile" },
     { name: "Logout", logoutFunction: handleLogout },
   ];
-  const handleShowNotification = () => {
-    navigate("/books")
-    setNotificationOpen(!notificationOpen)
-  }
+
+  const handleShowNotification = async (notificationId) => {
+    setNotificationOpen(!notificationOpen);
+    const { data } = await AxiosInstance.post('/notification/markAsSeen', {
+      notificationId,
+    })
+    if (data.statusCode === 200) {
+      navigate("/books")
+    }
+  };
 
   return (
     <nav className="bg-white shadow">
@@ -125,7 +122,7 @@ const Navbar = () => {
             <>
               <div className="relative mt-2">
                 <button
-                  onClick={() => setNotificationOpen(!notificationOpen)}
+                  onClick={handleShowNotification}
                   className="focus:outline-none"
                 >
                   <AiOutlineBell className="h-6 w-6 text-gray-700 hover:text-blue-500" />
@@ -133,16 +130,15 @@ const Navbar = () => {
                 {notificationOpen && (
                   <div className="absolute -right-5 mt-2 w-80 bg-white shadow-lg rounded-lg py-2 z-20">
                     <div className="relative max-h-60 overflow-y-auto bg-white shadow-lg rounded-lg py-2 z-20 transition-transform transform duration-200 ease-in-out">
-                      {notification.map(ntf => (
+                      {notifications.length > 0 ? notifications.map((ntf, index) => (
                         <button
-                          key={ntf.id}
+                          key={index}
                           className="block w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-200 rounded-lg transition-colors duration-200 ease-in-out"
-                          onClick={handleShowNotification}
+                          onClick={() => handleShowNotification(ntf._id)}
                         >
                           {ntf.message}
                         </button>
-                      ))}
-                      {notification.length === 0 && (
+                      )) : (
                         <div className="px-4 py-3 text-gray-500 text-center">
                           No notifications available.
                         </div>
@@ -150,7 +146,6 @@ const Navbar = () => {
                     </div>
                   </div>
                 )}
-
               </div>
             </>
           )}
@@ -291,22 +286,6 @@ const Navbar = () => {
               </NavLink>
             ))
           )}
-
-          <form onSubmit={handleSearchSubmit} className="flex items-center px-4 py-2">
-            <input
-              type="text"
-              placeholder="Search books..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1 w-full focus:outline-none focus:ring focus:border-blue-500"
-            />
-            <button
-              type="submit"
-              className="ml-2 bg-blue-500 text-white px-4 py-1 rounded-lg hover:bg-blue-600"
-            >
-              Search
-            </button>
-          </form>
         </div>
       )}
     </nav>

@@ -52,9 +52,14 @@ const Books = () => {
   };
 
   const isBookBorrowedByUser = (bookId) => {
+    console.log(userData?.borrowedBooks, "Borrowed boooks by user")
+    console.log(books, "BOOKS ARARAY")
+    console.log(bookId, "ID of the books")
+    console.log(userData?.borrowedBooks?.some(book => book._id === bookId))
+
+
     return userData?.borrowedBooks?.some((book) => book._id === bookId);
   };
-  console.log(userData, "UserData")
 
   if (isLoading) {
     return (
