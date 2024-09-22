@@ -8,6 +8,7 @@ import {
     FaLinkedin,
     FaUserFriends,
     FaBloggerB,
+    FaChartBar,
 } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { GiShoppingBag } from "react-icons/gi";
@@ -61,6 +62,12 @@ export const loggedInPages = [
 export const settings = ["Profile", "Dashboard", "Logout"];
 
 export const dashSidebar = [{
+        id: 1,
+        name: "Chart",
+        icon: FaChartBar,
+        link: "/dashboard/charts"
+    },
+    {
         id: 2,
         name: "Customer",
         icon: FaUserFriends,

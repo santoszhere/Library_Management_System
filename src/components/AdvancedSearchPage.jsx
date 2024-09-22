@@ -1,47 +1,110 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import AxiosInstance from '../config/AxiosInstance';
+import AxiosInstance from "../config/AxiosInstance";
 
 const useQuery = () => {
       return new URLSearchParams(useLocation().search);
+};
+
+// Debounce function
+const debounce = (func, delay) => {
+      let timeoutId;
+      return (...args) => {
+            if (timeoutId) clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                  func(...args);
+            }, delay);
+      };
 };
 
 const AdvancedSearchPage = () => {
       const query = useQuery();
       const navigate = useNavigate();
       const [searchResults, setSearchResults] = useState([]);
-      const [category, setCategory] = useState([])
+      const [genres, setGenres] = useState([]);
       const [loading, setLoading] = useState(false);
       const [filters, setFilters] = useState({
-            category: "",
+            title: "",
+            isbn: "",
+            genre: "",
             publicationYear: "",
             availability: false,
-            sort: "new",
+            sortBy: "newest",
       });
 
-      const searchQuery = query.get("query");
+      // Debounced states for title, isbn, and publicationYear
+      const [debouncedTitle, setDebouncedTitle] = useState(filters.title);
+      const [debouncedIsbn, setDebouncedIsbn] = useState(filters.isbn);
+      const [debouncedPublicationYear, setDebouncedPublicationYear] = useState(filters.publicationYear);
+
+      // Debounce for title
+      const handleTitleChange = (e) => {
+            const newTitle = e.target.value;
+            setFilters({ ...filters, title: newTitle });
+            debounceTitleChange(newTitle);
+      };
+
+      const debounceTitleChange = useCallback(
+            debounce((value) => {
+                  setDebouncedTitle(value);
+            }, 500),
+            []
+      );
+
+      // Debounce for ISBN
+      const handleIsbnChange = (e) => {
+            const newIsbn = e.target.value;
+            setFilters({ ...filters, isbn: newIsbn });
+            debounceIsbnChange(newIsbn);
+      };
+
+      const debounceIsbnChange = useCallback(
+            debounce((value) => {
+                  setDebouncedIsbn(value);
+            }, 500),
+            []
+      );
+
+      // Debounce for publicationYear
+      const handlePublicationYearChange = (e) => {
+            const newPublicationYear = e.target.value;
+            setFilters({ ...filters, publicationYear: newPublicationYear });
+            debouncePublicationYearChange(newPublicationYear);
+      };
+
+      const debouncePublicationYearChange = useCallback(
+            debounce((value) => {
+                  setDebouncedPublicationYear(value);
+            }, 500),
+            []
+      );
+
+      // Fetch search results whenever debounced values or other filters change
       useEffect(() => {
-            if (searchQuery || filters.category || filters.publicationYear || filters.availability !== false) {
-                  fetchSearchResults();
-            }
-      }, [searchQuery, filters]);
+            fetchSearchResults();
+      }, [
+            debouncedTitle,
+            debouncedIsbn,
+            debouncedPublicationYear,
+            filters.genre,
+            filters.availability,
+            filters.sortBy,
+      ]);
 
       const fetchSearchResults = async () => {
             setLoading(true);
             try {
-                  const { data } = await AxiosInstance.get("/search/query", {
-                        params: {
-                              // query: searchQuery,
-                              category: filters.category,
-                              publicationYear: filters.publicationYear,
-                              availability: filters.availability,
-                        },
-                  });
-                  // Filter to prioritize exact matches
-                  const exactMatches = data.data.filter(book =>
-                        book.title.toLowerCase() === searchQuery.toLowerCase()
-                  );
-                  setSearchResults(exactMatches.length > 0 ? exactMatches : data.data);
+                  const params = {
+                        ...(filters.genre && { genre: filters.genre === "All" ? "" : filters.genre }),
+                        ...(debouncedPublicationYear && { publicationYear: debouncedPublicationYear }),
+                        ...(filters.availability && { availability: filters.availability }),
+                        ...(debouncedTitle && { title: debouncedTitle }),
+                        ...(debouncedIsbn && { isbn: debouncedIsbn }),
+                        sortBy: filters.sortBy,
+                  };
+
+                  const { data } = await AxiosInstance.get("/search/query", { params });
+                  setSearchResults(data.data);
             } catch (error) {
                   console.error("Error fetching search results:", error);
             } finally {
@@ -49,65 +112,89 @@ const AdvancedSearchPage = () => {
             }
       };
 
-      const getCategory = async () => {
-            const { data } = await AxiosInstance.get("search/get-category")
-            if (data.statusCode === 200) {
-                  setCategory(data.data)
+      const getGenres = async () => {
+            try {
+                  const { data } = await AxiosInstance.get("/search/get-category");
+                  if (data.statusCode === 200) {
+                        setGenres(data.data);
+                  }
+            } catch (error) {
+                  console.error("Error fetching genres:", error);
             }
-      }
+      };
 
       useEffect(() => {
-            getCategory()
-      }, [])
+            getGenres();
+      }, []);
 
       const handleFilterChange = (e) => {
             const { name, value, type, checked } = e.target;
-            setFilters({ ...filters, [name]: type === "checkbox" ? checked : value });
-      };
 
-      const handleSearch = (e) => {
-            e.preventDefault();
-            const params = new URLSearchParams();
-            if (searchQuery) params.set("query", searchQuery);
-            if (filters.category) params.set("category", filters.category);
-            if (filters.publicationYear) params.set("publicationYear", filters.publicationYear);
-            if (filters.availability !== undefined) params.set("availability", filters.availability);
-            window.history.pushState({}, '', `?${params.toString()}`);
-            fetchSearchResults();
+            if (name === "genre" && value === "All") {
+                  setFilters({
+                        title: "",
+                        isbn: "",
+                        genre: "",
+                        publicationYear: "",
+                        availability: false,
+                        sortBy: "newest",
+                  });
+            } else {
+                  setFilters({ ...filters, [name]: type === "checkbox" ? checked : value });
+            }
       };
-
-      // Sorting the books based on publication year
-      const sortedResults = [...searchResults].sort((a, b) => {
-            return filters.sort === "new" ? b.publicationYear - a.publicationYear : a.publicationYear - b.publicationYear;
-      });
 
       const handleRedirectToBooks = () => {
-            navigate('/books');
+            navigate("/books");
       };
 
       return (
-            <div className="flex container mx-auto p-6">
+            <div className="flex flex-col lg:flex-row container mx-auto p-6">
                   {/* Filters Section */}
-                  <div className="w-1/4 p-4 bg-gray-100 rounded-md shadow-md mr-6">
+                  <div className="w-full lg:w-1/4 p-4 bg-gray-100 rounded-md shadow-md mb-6 lg:mb-0 lg:mr-6">
                         <h2 className="text-xl font-bold mb-4">Filters</h2>
-                        <form onSubmit={handleSearch} className="space-y-4">
+                        <form className="space-y-4">
                               <div>
-                                    <label className="block text-gray-700">Category</label>
+                                    <label className="block text-gray-700">Genre</label>
                                     <select
-                                          name="category"
+                                          name="genre"
                                           className="w-full px-4 py-2 border rounded-md focus:outline-none"
-                                          value={filters.category}
+                                          value={filters.genre}
                                           onChange={handleFilterChange}
                                     >
-                                          {
-                                                category?.map((cat, index) => (
-
-                                                      <option key={index} value={cat}>{cat}</option>
-                                                ))
-                                          }
-
+                                          <option value="">All</option>
+                                          {genres?.map((genre, index) => (
+                                                <option key={index} value={genre}>
+                                                      {genre}
+                                                </option>
+                                          ))}
+                                          <option value="All">All Genres</option>
                                     </select>
                               </div>
+
+                              <div>
+                                    <label className="block text-gray-700">Title</label>
+                                    <input
+                                          type="text"
+                                          name="title"
+                                          className="w-full px-4 py-2 border rounded-md focus:outline-none"
+                                          value={filters.title}
+                                          onChange={handleTitleChange}
+                                          placeholder="Enter book title"
+                                    />
+                              </div>
+                              <div>
+                                    <label className="block text-gray-700">ISBN</label>
+                                    <input
+                                          type="text"
+                                          name="isbn"
+                                          className="w-full px-4 py-2 border rounded-md focus:outline-none"
+                                          value={filters.isbn}
+                                          onChange={handleIsbnChange}
+                                          placeholder="Enter ISBN number"
+                                    />
+                              </div>
+
                               <div>
                                     <label className="block text-gray-700">Publication Year</label>
                                     <input
@@ -115,7 +202,8 @@ const AdvancedSearchPage = () => {
                                           name="publicationYear"
                                           className="w-full px-4 py-2 border rounded-md focus:outline-none"
                                           value={filters.publicationYear}
-                                          onChange={handleFilterChange}
+                                          onChange={handlePublicationYearChange}
+                                          placeholder="Enter publication year"
                                     />
                               </div>
                               <div>
@@ -132,25 +220,20 @@ const AdvancedSearchPage = () => {
                               <div>
                                     <label className="block text-gray-700">Sort By</label>
                                     <select
-                                          name="sort"
+                                          name="sortBy"
                                           className="w-full px-4 py-2 border rounded-md focus:outline-none"
-                                          value={filters.sort}
+                                          value={filters.sortBy}
                                           onChange={handleFilterChange}
                                     >
-                                          <option value="new">New First</option>
-                                          <option value="old">Old First</option>
+                                          <option value="newest">Newest First</option>
+                                          <option value="oldest">Oldest First</option>
+                                          <option value="title">Title</option>
                                     </select>
                               </div>
                               <button
-                                    type="submit"
-                                    className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full"
-                              >
-                                    Filter
-                              </button>
-                              <button
                                     type="button"
                                     onClick={handleRedirectToBooks}
-                                    className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-full mt-2"
+                                    className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-full"
                               >
                                     Show All Books
                               </button>
@@ -158,30 +241,46 @@ const AdvancedSearchPage = () => {
                   </div>
 
                   {/* Search Results Section */}
-                  <div className="w-3/4 p-4">
-                        <h1 className="text-2xl font-bold mb-6">Search Results for: {searchQuery}</h1>
+                  <div className="w-full lg:w-3/4">
+                        <h1 className="text-2xl font-bold mb-6">Search Results</h1>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                               {loading ? (
                                     <div className="text-center">Loading...</div>
-                              ) : sortedResults.length > 0 ? (
-                                    sortedResults.map((result) => (
-                                          <div key={result._id} className="bg-white rounded-md shadow-md border border-gray-300 h-full flex flex-col p-4">
-
-                                                <img src={result.coverImage} alt={result.title} className="w-full h-40 object-cover rounded-md mb-4" />
-
-                                                <h2 className="text-xl font-semibold">{result.title}</h2>
-                                                <p className="text-gray-600">by {result.author}</p>
-                                                <p className="text-gray-500">{result.genre}</p>
-                                                <p className="text-gray-400">Published: {result.publicationYear}</p>
-                                                <p className={`text-lg font-bold ${result.availability ? "text-green-600" : "text-red-600"}`}>
-                                                      {result.availability ? "Available" : "Unavailable"}
-                                                </p>
-                                                {!result.availability && result.borrowedBy && (
-                                                      <div className="mt-2">
-                                                            <p className="font-medium">Borrowed by:</p>
-                                                            <span>{result.borrowedBy.username}</span>
+                              ) : searchResults.length > 0 ? (
+                                    searchResults.map((result) => (
+                                          <div
+                                                key={result._id}
+                                                className="bg-white rounded-md shadow-md border border-gray-300 h-full flex flex-col p-4 transform transition duration-500 hover:scale-105 hover:shadow-xl"
+                                          >
+                                                <img
+                                                      src={result.coverImage}
+                                                      alt={result.title}
+                                                      className="w-full h-40 object-cover rounded-md mb-4"
+                                                />
+                                                <div className="flex justify-between">
+                                                      <div className="text-left">
+                                                            <h2 className="text-xl font-semibold">{result.title}</h2>
+                                                            <p className="text-gray-600">by {result.author}</p>
+                                                            <p className="text-gray-500">{result.genre}</p>
+                                                            <p className="text-gray-400">
+                                                                  Published: {result.publicationYear}
+                                                            </p>
                                                       </div>
-                                                )}
+                                                      <div className="text-right">
+                                                            <p
+                                                                  className={`text-lg font-bold ${result.availability ? "text-green-600" : "text-red-600"
+                                                                        }`}
+                                                            >
+                                                                  {result.availability ? "Available" : "Unavailable"}
+                                                            </p>
+                                                            {!result.availability && result.borrowedBy && (
+                                                                  <div className="mt-2">
+                                                                        <p className="font-medium">Borrowed by:</p>
+                                                                        <span>{result.borrowedBy.username}</span>
+                                                                  </div>
+                                                            )}
+                                                      </div>
+                                                </div>
                                                 {result.availability && (
                                                       <button
                                                             onClick={handleRedirectToBooks}
@@ -202,3 +301,4 @@ const AdvancedSearchPage = () => {
 };
 
 export default AdvancedSearchPage;
+

@@ -28,7 +28,7 @@ const LoginForm = () => {
       if (role === "member") {
         navigate("/books");
       } else if (role == "admin") {
-        navigate("/dashboard");
+        navigate("/dashboard/charts");
       }
     } catch (error) {
       toast.error("Invalid Credentials");

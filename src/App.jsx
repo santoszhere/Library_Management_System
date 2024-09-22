@@ -14,6 +14,7 @@ import DashboardBook from "./dashboard/components/DashboardBook";
 import CreateBook from "./dashboard/components/CreateBook";
 import EditBook from "./dashboard/components/EditBook";
 import AdvancedSearchPage from "./components/AdvancedSearchPage";
+import Chart from "./dashboard/Chart";
 
 const App = () => {
   const location = useLocation();
@@ -33,6 +34,7 @@ const App = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/books" element={<Books />} />
           <Route path="/dashboard" element={<Dashboard />}>
+            <Route path="charts" element={<Chart />} />
             <Route path="customers" element={<DashboardUser />} />
             <Route path="books" element={<DashboardBook />} />
             <Route path="book/create" element={<CreateBook />} />
