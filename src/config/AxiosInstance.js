@@ -87,8 +87,8 @@ const borrowBook = (bookId) => {
     return apiClient.post(`/borrow/books/${bookId}/borrow`, {});
 };
 
-const updateUser = (editData) => {
-    return apiClient.patch(`/users/update-account-details`, { editData });
+const updateUser = ({ username, oldPassword, newPassword }) => {
+    return apiClient.patch(`/users/update-account-details`, { username, oldPassword, newPassword });
 };
 const getAllBooks = () => {
     return apiClient.get("/books/get-all-books");
@@ -130,7 +130,7 @@ const getCategory = (params) => {
 };
 
 const editBook = (id, data) => {
-    return apiClient.put(`/books/update-book/${id}`, { data });
+    return apiClient.patch(`/books/update-book/${id}`, { data });
 };
 const getAdminStatictics = () => {
     return apiClient.get("/admin/get-statistics");

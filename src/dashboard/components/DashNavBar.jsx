@@ -19,8 +19,8 @@ const DashNavBar = () => {
   const handlelogout = async () => {
     const { data } = await logoutUSER();
     toast.success(data?.message);
-    navigate("/");
     dispatch(logoutUser());
+    navigate("/");
   };
   return (
     <nav className="flex items-center justify-between py-3 px-10">

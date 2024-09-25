@@ -56,7 +56,7 @@ const Profile = () => {
 
   const handleEditSubmit = async () => {
     try {
-      await updateUser(editData);
+      await updateUser({ username: editData.username, newPassword: editData.newPassword });
       getUserProfile();
       setIsEditing(false);
       toast.success("Profile updated successfully.");
@@ -181,6 +181,7 @@ const Profile = () => {
               onChange={(e) =>
                 setEditData({ ...editData, email: e.target.value })
               }
+              disabled
               placeholder="Email"
             />
             <input

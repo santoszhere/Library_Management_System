@@ -69,7 +69,7 @@ export const dashSidebar = [{
     },
     {
         id: 2,
-        name: "Customer",
+        name: "Users",
         icon: FaUserFriends,
         link: "/dashboard/customers",
     },
@@ -97,5 +97,5 @@ export const bookValidationSchema = yup.object({
     genre: yup.string().required("This field is required"),
     publicationYear: yup.number().required("This field is required"),
     isbn: yup.number().required("This field is required"),
-    avatar: yup.mixed().required("avatar is required"),
+    avatar: yup.mixed(),
 });

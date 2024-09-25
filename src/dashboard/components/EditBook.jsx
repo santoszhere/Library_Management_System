@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Form, Formik } from "formik";
 import FormikInput from "../../formik/FormikInput";
 import { editBook, getSingleBook } from "../../config/AxiosInstance";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { bookValidationSchema } from "../../constants/constants";
 
 const EditBook = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [book, setBook] = useState({});
 
   const fetchSingleBook = async () => {
@@ -31,13 +32,16 @@ const EditBook = () => {
     genre: book.genre || "",
     publicationYear: book.publicationYear || 0,
     isbn: book.isbn || 0,
+    // availability: book.availability || "true",
   };
 
   const formSubmit = async (values) => {
     try {
       const { data } = await editBook(id, values);
+      console.log(data);
       if (data.statusCode === 200) {
         toast.success(data.message);
+        navigate("/dashboard/books");
       }
     } catch (error) {
       console.error("Error updating book:", error);
@@ -98,6 +102,24 @@ const EditBook = () => {
                     name="isbn"
                     className="rounded-lg border-gray-300 shadow-sm"
                   />
+
+                  {/* Select for Availability */}
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor="availability"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Availability
+                    </label>
+                    <select
+                      name="availability"
+                      className="rounded-lg border-gray-300 shadow-sm mt-1"
+                      required
+                    >
+                      <option value="true">Available</option>
+                      <option value="false">Not Available</option>
+                    </select>
+                  </div>
                 </div>
 
                 {/* Right: Image Preview */}
