@@ -4,7 +4,7 @@ import FormikInput from "../formik/FormikInput";
 import { registrationValidationSchema } from "../constants/constants";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import AxiosInstance from "../config/AxiosInstance";
+import { registerUSER } from "../config/AxiosInstance";
 import FormikFile from "../formik/FormikFile";
 
 const RegisterForm = () => {
@@ -24,11 +24,7 @@ const RegisterForm = () => {
       formData.append("password", values.password);
       formData.append("avatar", values.avatar);
 
-      const { data } = await AxiosInstance.post("/users/register", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const { data } = await registerUSER(formData);
 
       console.log(data);
       if (data?.statusCode === 201) {

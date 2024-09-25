@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import AxiosInstance from "../../config/AxiosInstance";
+import { adminDeleteBook, adminGetAllBook } from "../../config/AxiosInstance";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
@@ -14,7 +14,7 @@ const DashboardBook = () => {
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data } = await AxiosInstance.get("/admin/get-all-books");
+      const { data } = await adminGetAllBook();
       if (data?.data) {
         setProducts(data.data);
         setFilteredProduct(data?.data);
@@ -32,10 +32,10 @@ const DashboardBook = () => {
     const deleteProduct = confirm("Are you sure you want to delete this book?");
     if (deleteProduct) {
       try {
-        const { data } = await AxiosInstance.delete(`/books/delete-book/${id}`);
+        const { data } = await adminDeleteBook(id);
         if (data.statusCode === 200) {
           toast.success(data.message);
-          setRefresh(!refresh); // Trigger refetch
+          setRefresh(!refresh);
         } else {
           toast.error("Failed to delete product");
         }

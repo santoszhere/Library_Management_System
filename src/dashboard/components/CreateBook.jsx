@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { Form, Formik } from "formik";
 import FormikInput from "../../formik/FormikInput";
 import FormikFile from "../../formik/FormikFile";
-import AxiosInstance from "../../config/AxiosInstance";
+import { createBook } from "../../config/AxiosInstance";
 import toast from "react-hot-toast";
 import { bookValidationSchema } from "../../constants/constants";
+import { useNavigate } from "react-router-dom";
 
 const CreateBook = () => {
   const [imagePreview, setImagePreview] = useState(null);
-
+  const navigate = useNavigate();
   const initialValues = {
     title: "",
     author: "",
@@ -27,16 +28,14 @@ const CreateBook = () => {
     formData.append("isbn", parseInt(values.isbn));
     formData.append("avatar", values.avatar);
 
-    const { data } = await AxiosInstance.post("/books/add-book", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const { data } = await createBook(formData);
 
+    console.log(data);
     if (data.statusCode === 201) {
       resetForm();
       setImagePreview(null);
       toast.success(data?.message);
+      navigate("/dashboard/books");
     }
   };
 

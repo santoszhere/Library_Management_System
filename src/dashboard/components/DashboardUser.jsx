@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import AxiosInstance from "../../config/AxiosInstance";
+import {
+  adminDeleteUser,
+  adminGetALlUser,
+  adminUpdateRole,
+} from "../../config/AxiosInstance";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 
@@ -12,7 +16,7 @@ const DashboardUser = () => {
   const getAllUsers = async () => {
     setIsLoading(true);
     try {
-      const { data } = await AxiosInstance.get("/admin/get-all-users");
+      const { data } = await adminGetALlUser();
       if (data.statusCode !== 200) return;
       setUsers(data.data);
     } catch (error) {
@@ -31,7 +35,7 @@ const DashboardUser = () => {
     if (user.role === "admin") {
       toast.error("You can't remove admin");
     } else if (deleteUser) {
-      const { data } = await AxiosInstance.delete(`/admin/delete-user/${id}`);
+      const { data } = await adminDeleteUser(id);
       if (data?.statusCode !== 200) return;
       toast.success(data?.message);
       setRefresh(!refresh);
@@ -40,9 +44,7 @@ const DashboardUser = () => {
 
   const handleRoleChange = async (id, newRole) => {
     try {
-      const { data } = await AxiosInstance.put(`/admin/update-user-role/${id}`, {
-        role: newRole,
-      });
+      const { data } = await adminUpdateRole(id, newRole);
       if (data?.statusCode === 200) {
         toast.success("Role updated successfully");
         setRefresh(!refresh);
@@ -79,12 +81,24 @@ const DashboardUser = () => {
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-gray-700 font-medium">#</th>
-              <th className="px-4 py-3 text-left text-gray-700 font-medium">Name</th>
-              <th className="px-4 py-3 text-left text-gray-700 font-medium">Profile</th>
-              <th className="px-4 py-3 text-left text-gray-700 font-medium">Email</th>
-              <th className="px-4 py-3 text-left text-gray-700 font-medium">Role</th>
-              <th className="px-4 py-3 text-right text-gray-700 font-medium">Action</th>
+              <th className="px-4 py-3 text-left text-gray-700 font-medium">
+                #
+              </th>
+              <th className="px-4 py-3 text-left text-gray-700 font-medium">
+                Name
+              </th>
+              <th className="px-4 py-3 text-left text-gray-700 font-medium">
+                Profile
+              </th>
+              <th className="px-4 py-3 text-left text-gray-700 font-medium">
+                Email
+              </th>
+              <th className="px-4 py-3 text-left text-gray-700 font-medium">
+                Role
+              </th>
+              <th className="px-4 py-3 text-right text-gray-700 font-medium">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -109,7 +123,9 @@ const DashboardUser = () => {
                       <select
                         className="bg-gray-50 border border-gray-300 text-gray-700 py-1 px-3 rounded-md"
                         value={user.role}
-                        onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                        onChange={(e) =>
+                          handleRoleChange(user._id, e.target.value)
+                        }
                       >
                         <option value="member">Member</option>
                         <option value="librarian">Librarian</option>

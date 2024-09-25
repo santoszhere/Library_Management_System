@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, Formik } from "formik";
 import FormikInput from "../../formik/FormikInput";
-import AxiosInstance from "../../config/AxiosInstance";
+import { editBook, getSingleBook } from "../../config/AxiosInstance";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { bookValidationSchema } from "../../constants/constants";
@@ -12,7 +12,7 @@ const EditBook = () => {
 
   const fetchSingleBook = async () => {
     try {
-      const { data } = await AxiosInstance.get(`/books/get-single-book/${id}`);
+      const { data } = await getSingleBook(id);
       if (data.statusCode === 200) {
         setBook(data.data);
       }
@@ -34,12 +34,8 @@ const EditBook = () => {
   };
 
   const formSubmit = async (values) => {
-    console.log(values);
     try {
-      const { data } = await AxiosInstance.patch(
-        `/books/update-book/${id}`,
-        values
-      );
+      const { data } = await editBook(id, values);
       if (data.statusCode === 200) {
         toast.success(data.message);
       }

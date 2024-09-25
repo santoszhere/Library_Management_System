@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
-import AxiosInstance from "../config/AxiosInstance";
+import {
+  getCurrentUser,
+  returnBook,
+  updateUser,
+} from "../config/AxiosInstance";
 import { FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { fetchCurrentUser } from "../store/slices/authSlice";
 
 const Profile = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const [userProfile, setUserProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -19,7 +23,7 @@ const Profile = () => {
 
   const getUserProfile = async () => {
     try {
-      const { data } = await AxiosInstance.get("/users/current-user");
+      const { data } = await getCurrentUser();
       setUserProfile(data.data);
       setEditData({
         username: data.data.username,
@@ -35,22 +39,22 @@ const Profile = () => {
 
   const handleReturnBook = async (id) => {
     try {
-      const { data } = await AxiosInstance.post(`/borrow/books/${id}/return`);
+      const { data } = await returnBook(id);
       getUserProfile();
 
       if (!data.data) {
         toast.error("Failed to return book");
       }
       toast.success(data.message);
-      dispatch(fetchCurrentUser())
+      dispatch(fetchCurrentUser());
     } catch (error) {
       console.error("Error returning book:", error);
     }
   };
-  ``
+  ``;
   const handleEditSubmit = async () => {
     try {
-      await AxiosInstance.put("/users/update", editData);
+      await updateUser(editData);
       getUserProfile();
       setIsEditing(false);
       toast.success("Profile updated successfully.");
@@ -83,13 +87,17 @@ const Profile = () => {
               <input
                 className="block w-full md:w-auto text-xl font-semibold border border-gray-300 p-2 rounded mb-2"
                 value={editData.username}
-                onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                onChange={(e) =>
+                  setEditData({ ...editData, username: e.target.value })
+                }
                 placeholder="Username"
               />
               <input
                 className="block w-full md:w-auto text-gray-600 border border-gray-300 p-2 rounded mb-2"
                 value={editData.email}
-                onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                onChange={(e) =>
+                  setEditData({ ...editData, email: e.target.value })
+                }
                 placeholder="Email"
               />
 
@@ -98,7 +106,9 @@ const Profile = () => {
                 type="password"
                 className="block w-full md:w-auto border border-gray-300 p-2 rounded mb-2"
                 value={editData.oldPassword}
-                onChange={(e) => setEditData({ ...editData, oldPassword: e.target.value })}
+                onChange={(e) =>
+                  setEditData({ ...editData, oldPassword: e.target.value })
+                }
                 placeholder="Old Password"
               />
 
@@ -107,7 +117,9 @@ const Profile = () => {
                 type="password"
                 className="block w-full md:w-auto border border-gray-300 p-2 rounded mb-2"
                 value={editData.newPassword}
-                onChange={(e) => setEditData({ ...editData, newPassword: e.target.value })}
+                onChange={(e) =>
+                  setEditData({ ...editData, newPassword: e.target.value })
+                }
                 placeholder="New Password"
               />
             </>
@@ -178,10 +190,13 @@ const Profile = () => {
                   <h3 className="text-xl font-semibold mb-2">{book.title}</h3>
                   <p className="text-gray-600">Author: {book.author}</p>
                   <p className="text-gray-600">Genre: {book.genre}</p>
-                  <p className="text-gray-600">Published: {book.publicationYear}</p>
+                  <p className="text-gray-600">
+                    Published: {book.publicationYear}
+                  </p>
                   <p className="text-gray-600">ISBN: {book.isbn}</p>
                   <p className="text-gray-600">
-                    Borrowed At: {new Date(book.borrowedAt).toLocaleDateString()}
+                    Borrowed At:{" "}
+                    {new Date(book.borrowedAt).toLocaleDateString()}
                   </p>
                   <p className="text-red-500">
                     Due Date: {new Date(book.dueDate).toLocaleDateString()}
@@ -198,7 +213,9 @@ const Profile = () => {
       {/* Fines Section */}
       <div className="bg-white shadow-lg rounded-lg p-6 mt-8">
         <h2 className="text-2xl font-semibold mb-4">Fines</h2>
-        <p className="text-gray-600">{fines === 0 ? "No fines" : `$${fines}`}</p>
+        <p className="text-gray-600">
+          {fines === 0 ? "No fines" : `$${fines}`}
+        </p>
       </div>
     </div>
   );

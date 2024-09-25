@@ -15,6 +15,8 @@ import CreateBook from "./dashboard/components/CreateBook";
 import EditBook from "./dashboard/components/EditBook";
 import AdvancedSearchPage from "./components/AdvancedSearchPage";
 import Chart from "./dashboard/Chart";
+import OtherUserProfile from "./pages/OtherUserProfile";
+import Chat from "./pages/Chat";
 
 const App = () => {
   const location = useLocation();
@@ -32,6 +34,8 @@ const App = () => {
 
         <Route element={<ProtectedRoutes />}>
           <Route path="/profile" element={<Profile />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/profile/:userId" element={<OtherUserProfile />} />
           <Route path="/books" element={<Books />} />
           <Route path="/dashboard" element={<Dashboard />}>
             <Route path="charts" element={<Chart />} />

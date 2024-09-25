@@ -4,9 +4,9 @@ import FormikInput from "../formik/FormikInput";
 import { loginValidationSchema } from "../constants/constants";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import AxiosInstance from "../config/AxiosInstance";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../store/slices/authSlice";
+import { loginUSER } from "../config/AxiosInstance";
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -18,7 +18,7 @@ const LoginForm = () => {
 
   const formSubmit = async (values) => {
     try {
-      const { data } = await AxiosInstance.post("/users/login", values);
+      const { data } = await loginUSER(values);
       console.log(data);
       if (data.statusCode !== 200) return;
       const userData = data.data;

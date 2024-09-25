@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { CiSearch } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
 import { setsearch } from "../../store/slices/searchSlice";
-import AxiosInstance from "../../config/AxiosInstance";
+import { logoutUSER } from "../../config/AxiosInstance";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../../store/slices/authSlice";
 
 const DashNavBar = () => {
   const { userData } = useSelector((state) => state.user);
@@ -16,7 +17,7 @@ const DashNavBar = () => {
     dispatch(setsearch(value));
   };
   const handlelogout = async () => {
-    const { data } = await AxiosInstance.post("/users/logout", {});
+    const { data } = await logoutUSER();
     toast.success(data?.message);
     navigate("/");
     dispatch(logoutUser());

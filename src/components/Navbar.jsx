@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { pages, loggedInPages } from "../constants/constants";
-import AxiosInstance from "../config/AxiosInstance";
+import { getNotification, logoutUSER } from "../config/AxiosInstance";
 import { logoutUser } from "../store/slices/authSlice";
 import toast from "react-hot-toast";
 import { AiOutlineBell } from "react-icons/ai";
@@ -30,7 +30,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await AxiosInstance.post("/users/logout", {});
+      await logoutUSER();
       dispatch(logoutUser());
       navigate("/sign-in");
       toast.success("Logged out successfully");
@@ -42,7 +42,7 @@ const Navbar = () => {
 
   const fetchNotifications = async () => {
     try {
-      const { data } = await AxiosInstance.get('/notification/get-notification');
+      const { data } = await getNotification();
       setNotifications(data.data);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
@@ -78,7 +78,6 @@ const Navbar = () => {
     }
   }, [user]);
 
-
   const profileDropdownOptions = [
     { name: "Profile", path: "/profile" },
     { name: "Logout", logoutFunction: handleLogout },
@@ -86,11 +85,11 @@ const Navbar = () => {
 
   const handleShowNotification = async (notificationId) => {
     setNotificationOpen(!notificationOpen);
-    const { data } = await AxiosInstance.post('/notification/markAsSeen', {
+    const { data } = await AxiosInstance.post("/notification/markAsSeen", {
       notificationId,
-    })
+    });
     if (data.statusCode === 200) {
-      navigate("/books")
+      navigate("/books");
     }
   };
 
@@ -98,10 +97,15 @@ const Navbar = () => {
     <nav className="bg-white shadow">
       <div className="container mx-auto px-6 py-3 flex justify-between items-center">
         <div className="flex items-center">
-          <Link to="/" className="text-lg font-semibold">Library Management System</Link>
+          <Link to="/" className="text-lg font-semibold">
+            Library Management System
+          </Link>
         </div>
 
-        <form onSubmit={handleSearchSubmit} className="hidden md:flex items-center">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="hidden md:flex items-center"
+        >
           <input
             type="text"
             placeholder="Search books..."
@@ -130,15 +134,17 @@ const Navbar = () => {
                 {notificationOpen && (
                   <div className="absolute -right-5 mt-2 w-80 bg-white shadow-lg rounded-lg py-2 z-20">
                     <div className="relative max-h-60 overflow-y-auto bg-white shadow-lg rounded-lg py-2 z-20 transition-transform transform duration-200 ease-in-out">
-                      {notifications.length > 0 ? notifications.map((ntf, index) => (
-                        <button
-                          key={index}
-                          className="block w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-200 rounded-lg transition-colors duration-200 ease-in-out"
-                          onClick={() => handleShowNotification(ntf._id)}
-                        >
-                          {ntf.message}
-                        </button>
-                      )) : (
+                      {notifications.length > 0 ? (
+                        notifications.map((ntf, index) => (
+                          <button
+                            key={index}
+                            className="block w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-200 rounded-lg transition-colors duration-200 ease-in-out"
+                            onClick={() => handleShowNotification(ntf._id)}
+                          >
+                            {ntf.message}
+                          </button>
+                        ))
+                      ) : (
                         <div className="px-4 py-3 text-gray-500 text-center">
                           No notifications available.
                         </div>
@@ -156,7 +162,9 @@ const Navbar = () => {
                   to={page.path}
                   key={page.name}
                   className={({ isActive }) =>
-                    `${isActive ? "text-blue-500" : ""} text-gray-700 hover:text-blue-500`
+                    `${
+                      isActive ? "text-blue-500" : ""
+                    } text-gray-700 hover:text-blue-500`
                   }
                 >
                   {page.name}
@@ -203,7 +211,9 @@ const Navbar = () => {
                 to={page.path}
                 key={page.name}
                 className={({ isActive }) =>
-                  `${isActive ? "text-blue-500" : ""} text-gray-700 hover:text-blue-500`
+                  `${
+                    isActive ? "text-blue-500" : ""
+                  } text-gray-700 hover:text-blue-500`
                 }
               >
                 {page.name}
@@ -213,7 +223,10 @@ const Navbar = () => {
         </div>
 
         <div className="md:hidden">
-          <button onClick={() => setIsOpen(!isOpen)} className="focus:outline-none">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="focus:outline-none"
+          >
             <svg
               className="w-6 h-6"
               fill="none"
