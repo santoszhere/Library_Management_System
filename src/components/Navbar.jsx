@@ -162,8 +162,7 @@ const Navbar = () => {
                   to={page.path}
                   key={page.name}
                   className={({ isActive }) =>
-                    `${
-                      isActive ? "text-blue-500" : ""
+                    `${isActive ? "text-blue-500" : ""
                     } text-gray-700 hover:text-blue-500`
                   }
                 >
@@ -184,7 +183,7 @@ const Navbar = () => {
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg py-2 z-10">
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg py-2 z-40">
                     {profileDropdownOptions.map((option) => (
                       <button
                         key={option.name}
@@ -211,8 +210,7 @@ const Navbar = () => {
                 to={page.path}
                 key={page.name}
                 className={({ isActive }) =>
-                  `${
-                    isActive ? "text-blue-500" : ""
+                  `${isActive ? "text-blue-500" : ""
                   } text-gray-700 hover:text-blue-500`
                 }
               >

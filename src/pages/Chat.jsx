@@ -36,11 +36,10 @@ const UPDATE_GROUP_NAME_EVENT = "updateGroupName";
 const MESSAGE_DELETE_EVENT = "messageDeleted";
 
 const Chat = () => {
-  // Import the 'useAuth' and 'useSocket' hooks from their respective contexts
+
   const { userData: user } = useSelector((state) => state.user);
   const { socket } = useSelector((state) => state.socket);
-  console.log(socket, "SOCKET");
-  const logout = () => {};
+  const logout = () => { };
 
   const currentChat = useRef(null);
 
@@ -120,7 +119,6 @@ const Chat = () => {
     );
 
     requestHandler(
-      // Fetching messages for the current chat
       async () => await getChatMessages(currentChat.current?._id || ""),
       setLoadingMessages,
       (res) => {
@@ -305,14 +303,7 @@ const Chat = () => {
 
       <div className="w-full justify-between items-stretch h-screen flex flex-shrink-0">
         <div className="w-1/3 relative ring-white overflow-y-auto px-4">
-          <div className="z-10 w-full sticky top-0 bg-dark py-4 flex justify-between items-center gap-4">
-            <button
-              type="button"
-              className="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-xl text-sm px-5 py-4 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900 flex-shrink-0"
-              onClick={logout}
-            >
-              Log Out
-            </button>
+          <div className="z-10 w-full sticky top-0 bg-dark px-2 py-4 flex justify-between items-center gap-4">
 
             <Input
               placeholder="Search user or group..."
@@ -323,7 +314,7 @@ const Chat = () => {
             />
             <button
               onClick={() => setOpenAddChat(true)}
-              className="rounded-xl border-none bg-primary text-white py-4 px-5 flex flex-shrink-0"
+              className="rounded-xl border-none bg-primary text-black py-4 px-5 flex flex-shrink-0"
             >
               + Add chat
             </button>
@@ -333,17 +324,14 @@ const Chat = () => {
               <Typing />
             </div>
           ) : (
-            // Iterating over the chats array
             [...chats]
-              // Filtering chats based on a local search query
               .filter((chat) =>
-                // If there's a localSearchQuery, filter chats that contain the query in their metadata title
                 localSearchQuery
                   ? getChatObjectMetadata(chat, user)
-                      .title?.toLocaleLowerCase()
-                      ?.includes(localSearchQuery)
+                    .title?.toLocaleLowerCase()
+                    ?.includes(localSearchQuery)
                   : // If there's no localSearchQuery, include all chats
-                    true
+                  true
               )
               .map((chat) => {
                 return (
@@ -398,10 +386,10 @@ const Chat = () => {
                                 i === 0
                                   ? "left-0 z-30"
                                   : i === 1
-                                  ? "left-2 z-20"
-                                  : i === 2
-                                  ? "left-4 z-10"
-                                  : ""
+                                    ? "left-2 z-20"
+                                    : i === 2
+                                      ? "left-4 z-10"
+                                      : ""
                               )}
                             />
                           );

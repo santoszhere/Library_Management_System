@@ -1,27 +1,32 @@
-import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import socketio from "socket.io-client";
-import { disconnectSocket, setSocket } from "../store/slices/socketSlice";
 
+// Function to establish a socket connection with authorization token
 const getSocket = () => {
+
   return socketio("http://localhost:5000", {
     withCredentials: true,
   });
 };
 
+const SocketContext = createContext({
+  socket: null,
+});
+
+const useSocket = () => useContext(SocketContext);
+
 const SocketProvider = ({ children }) => {
-  const dispatch = useDispatch();
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const socket = getSocket();
-    dispatch(setSocket(socket));
+    setSocket(getSocket());
+  }, []);
 
-    return () => {
-      dispatch(disconnectSocket());
-    };
-  }, [dispatch]);
-
-  return <>{children}</>;
+  return (
+    <SocketContext.Provider value={{ socket }}>
+      {children}
+    </SocketContext.Provider>
+  );
 };
 
-export default SocketProvider;
+export { SocketProvider, useSocket };

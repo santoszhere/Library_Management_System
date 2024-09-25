@@ -20,6 +20,7 @@ import Input from "./Input";
 import Select from "./Select";
 import { useSelector } from "react-redux";
 import { requestHandler } from "../utils";
+import toast from "react-hot-toast";
 
 const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
   const { userData: user } = useSelector((state) => state.user);
@@ -29,7 +30,6 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
   const [newGroupName, setNewGroupName] = useState("");
   const [groupDetails, setGroupDetails] = useState(null);
   const [users, setUsers] = useState([]);
-
   const handleGroupNameUpdate = async () => {
     if (!newGroupName) return alert("Group name is required");
     requestHandler(
@@ -40,7 +40,7 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
         setGroupDetails(data);
         setNewGroupName(data.name);
         setRenamingGroup(false);
-        alert("Group name updated to " + data.name);
+        toast.success(`Group name updated to  ${data.name}`)
       },
       alert
     );
@@ -60,8 +60,10 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
 
   const deleteGroupChat = async () => {
     if (groupDetails?.admin !== user?._id) {
-      return alert("You are not the admin of the group");
+      return toast.error("You are not the admin of the group");
     }
+    const confirmDeleteGroup = confirm("Are you sure you want to delete this group .? ")
+    if (!confirmDeleteGroup) return
     requestHandler(
       async () => await deleteGroup(chatId),
       null,
@@ -74,6 +76,8 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
   };
 
   const removeParticipant = async (participantId) => {
+    const confirmss = confirm("Are you sure you want to remove this participant.?")
+    if (!confirmss) return
     requestHandler(
       async () => await removeParticipantFromGroup(chatId, participantId),
       null,
@@ -86,7 +90,7 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
             ) || [],
         };
         setGroupDetails(updatedGroupDetails);
-        alert("Participant removed");
+        toast.success("Participant removed");
       },
       alert
     );
@@ -94,9 +98,9 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
 
   const addParticipant = async () => {
     if (!participantToBeAdded)
-      return alert("Please select a participant to add.");
+      return toast.error("Please select a participant to add.");
     requestHandler(
-      async () => await addParticipantToGroup(chatId, participantToBeAdded),
+      async () => await addParticipantToGroup(chatId, participantToBeAdded.value),
       null,
       (res) => {
         const { data } = res;
@@ -105,7 +109,7 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
           participants: data?.participants || [],
         };
         setGroupDetails(updatedGroupDetails);
-        alert("Participant added");
+        toast.success("Participant added");
       },
       alert
     );
@@ -184,12 +188,12 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
                             <img
                               className="w-24 h-24 -ml-16 rounded-full outline outline-4 outline-secondary"
                               key={p._id}
-                              src={p.avatar.url}
+                              src={p.avatar}
                               alt="avatar"
                             />
                           ))}
                           {groupDetails?.participants &&
-                          groupDetails?.participants.length > 3 ? (
+                            groupDetails?.participants.length > 3 ? (
                             <p>+{groupDetails?.participants.length - 3}</p>
                           ) : null}
                         </div>
@@ -246,10 +250,10 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
                                   <div className="flex justify-start items-start gap-3 w-full">
                                     <img
                                       className="w-10 h-10 rounded-full"
-                                      src={part.avatar.url}
+                                      src={part.avatar}
                                       alt="avatar"
                                     />
-                                    <p className="text-lg">{part.name}</p>
+                                    <p className="text-lg">{part.username}</p>
                                   </div>
                                   {groupDetails?.admin === user?._id && (
                                     <button
@@ -276,7 +280,7 @@ const GroupChatDetailsModal = ({ open, onClose, chatId, onGroupDelete }) => {
                               placeholder="Select participant"
                               options={users.map((u) => ({
                                 value: u._id,
-                                label: u.name,
+                                label: u.username,
                               }))}
                               onChange={(value) =>
                                 setParticipantToBeAdded(value)

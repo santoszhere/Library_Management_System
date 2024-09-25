@@ -17,8 +17,20 @@ import AdvancedSearchPage from "./components/AdvancedSearchPage";
 import Chart from "./dashboard/Chart";
 import OtherUserProfile from "./pages/OtherUserProfile";
 import Chat from "./pages/Chat";
+import { useDispatch } from "react-redux";
+import { disconnectSocket, initializeSocket } from "./store/slices/socketSlice";
+import { useEffect } from "react";
 
 const App = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(initializeSocket());
+
+    return () => {
+      dispatch(disconnectSocket());
+    };
+  }, [dispatch]);
   const location = useLocation();
   const hideNavbar = location.pathname.startsWith("/dashboard");
   return (

@@ -20,6 +20,7 @@ export const classNames = (...className) => {
 export const isBrowser = typeof window !== "undefined";
 
 export const getChatObjectMetadata = (chat, loggedInUser) => {
+  7;
   const lastMessage = chat.lastMessage?.content
     ? chat.lastMessage?.content
     : "No messages yet";
@@ -38,7 +39,7 @@ export const getChatObjectMetadata = (chat, loggedInUser) => {
       (p) => p._id !== loggedInUser?._id
     );
     return {
-      avatar: participant?.avatar.url,
+      avatar: participant?.avatar,
       title: participant?.username,
       description: participant?.email,
       lastMessage,

@@ -110,16 +110,16 @@ const ChatItem = ({
                 return (
                   <img
                     key={participant._id}
-                    src={participant.avatar.url}
+                    src={participant.avatar}
                     className={classNames(
                       "w-8 h-8 border-[1px] border-white rounded-full absolute outline outline-4 outline-dark group-hover:outline-secondary",
                       i === 0
                         ? "left-0 z-[3]"
                         : i === 1
-                        ? "left-2.5 z-[2]"
-                        : i === 2
-                        ? "left-[18px] z-[1]"
-                        : ""
+                          ? "left-2.5 z-[2]"
+                          : i === 2
+                            ? "left-[18px] z-[1]"
+                            : ""
                     )}
                   />
                 );

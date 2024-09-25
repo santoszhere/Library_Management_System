@@ -41,7 +41,7 @@ const MessageItem = ({
         )}
       >
         <img
-          src={message.sender?.avatar?.url}
+          src={message.sender?.avatar}
           className={classNames(
             "h-7 w-7 object-cover rounded-full flex flex-shrink-0",
             isOwnMessage ? "order-2" : "order-1"
@@ -61,14 +61,14 @@ const MessageItem = ({
               className={classNames(
                 "text-xs font-semibold mb-2",
                 ["text-success", "text-danger"][
-                  message.sender.username.length % 2
+                message.sender.username.length % 2
                 ]
               )}
             >
               {message.sender?.username}
             </p>
           )}
-          {message.attachments?.length > 0 && (
+          {message?.length > 0 && (
             <div>
               {isOwnMessage && (
                 <button
@@ -101,45 +101,6 @@ const MessageItem = ({
                   </div>
                 </button>
               )}
-
-              <div
-                className={classNames(
-                  "grid max-w-7xl gap-2",
-                  message.attachments.length === 1 ? "grid-cols-1" : "",
-                  message.attachments.length === 2 ? "grid-cols-2" : "",
-                  message.attachments.length >= 3 ? "grid-cols-3" : "",
-                  message.content ? "mb-6" : ""
-                )}
-              >
-                {message.attachments.map((file) => (
-                  <div
-                    key={file._id}
-                    className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer"
-                  >
-                    <button
-                      onClick={() => setResizedImage(file.url)}
-                      className="absolute inset-0 z-20 flex justify-center items-center w-full gap-2 h-full bg-black/60 group-hover:opacity-100 opacity-0 transition-opacity ease-in-out duration-150"
-                    >
-                      <MagnifyingGlassPlusIcon className="h-6 w-6 text-white" />
-                      <a
-                        href={file.url}
-                        download
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ArrowDownTrayIcon
-                          title="download"
-                          className="hover:text-zinc-400 h-6 w-6 text-white cursor-pointer"
-                        />
-                      </a>
-                    </button>
-                    <img
-                      className="h-full w-full object-cover"
-                      src={file.url}
-                      alt="msg_img"
-                    />
-                  </div>
-                ))}
-              </div>
             </div>
           )}
           {message.content && (
@@ -152,7 +113,7 @@ const MessageItem = ({
                   <EllipsisVerticalIcon className="group-hover:w-4 group-hover:opacity-100 w-0 opacity-0 transition-all ease-in-out duration-100 text-zinc-300" />
                   <div
                     className={classNames(
-                      "delete-menu z-20 text-left -translate-x-24 -translate-y-4 absolute bottom-0 text-[10px] w-auto bg-dark rounded-2xl shadow-md border-[1px] border-secondary",
+                      "delete-menu z-20 text-left -translate-x-24 -translate-y-4 absolute -bottom-3 left-2 text-[10px] w-auto bg-dark rounded-2xl shadow-md border-[1px] border-secondary",
                       openOptions ? "block" : "hidden"
                     )}
                   >
@@ -167,7 +128,7 @@ const MessageItem = ({
                         }
                       }}
                       role="button"
-                      className="p-2 text-danger rounded-lg w-auto inline-flex items-center hover:bg-secondary"
+                      className="p-2  text-danger rounded-lg w-auto inline-flex items-center hover:bg-secondary"
                     >
                       <TrashIcon className="h-4 w-auto mr-1" />
                       Delete Message
