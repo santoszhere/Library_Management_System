@@ -39,7 +39,6 @@ const MESSAGE_DELETE_EVENT = "messageDeleted";
 const Chat = () => {
   const { userData: user } = useSelector((state) => state.user);
   const { socket } = useSelector((state) => state.socket);
-  const logout = () => {};
 
   const currentChat = useRef(null);
 
@@ -61,11 +60,7 @@ const Chat = () => {
   const [message, setMessage] = useState("");
   const [localSearchQuery, setLocalSearchQuery] = useState("");
 
-  /**
-   *  A  function to update the last message of a specified chat to update the chat list
-   */
   const updateChatLastMessage = (chatToUpdateId, message) => {
-    // Search for the chat with the given ID in the chats array
     const chatToUpdate = chats.find((chat) => chat._id === chatToUpdateId);
 
     chatToUpdate.lastMessage = message;
@@ -267,7 +262,7 @@ const Chat = () => {
 
   useEffect(() => {
     if (!socket) return;
-
+    // socket.connect()
     socket.on(CONNECTED_EVENT, onConnect);
     socket.on(DISCONNECT_EVENT, onDisconnect);
     socket.on(TYPING_EVENT, handleOnSocketTyping);
