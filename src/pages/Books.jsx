@@ -13,11 +13,17 @@ const Books = () => {
   const [refresh, setRefresh] = useState(false);
   const [loadingBookId, setLoadingBookId] = useState(null);
 
+  const formatDueDate = (dueDate) => {
+    const date = new Date(dueDate);
+    const formattedDate = date.toLocaleDateString();
+
+    return formattedDate;
+  };
+
   useEffect(() => {
     const fetchBooks = async () => {
       try {
         const { data } = await getAllBooks();
-        console.log(data, "books");
         if (data?.data) {
           setBooks(data.data);
         }
@@ -140,12 +146,14 @@ const Books = () => {
                     ? "Loading..."
                     : "Borrow this Book"}
                 </button>
+              ) : !isBookBorrowedByUser(book._id) ? (
+                <p className="text-red-500 font-medium text-center">
+                  Available at: {formatDueDate(book.dueDate)}
+                </p>
               ) : (
-                !isBookBorrowedByUser(book._id) && (
-                  <p className="text-red-500 font-medium text-center">
-                    Unavailable for now
-                  </p>
-                )
+                <p className="text-blue-500 font-medium text-center">
+                  You borrowed this book.
+                </p>
               )}
             </div>
           ))

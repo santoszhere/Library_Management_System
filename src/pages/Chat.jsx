@@ -23,6 +23,7 @@ import {
   requestHandler,
 } from "../utils";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 const CONNECTED_EVENT = "connected";
 const DISCONNECT_EVENT = "disconnect";
@@ -36,10 +37,9 @@ const UPDATE_GROUP_NAME_EVENT = "updateGroupName";
 const MESSAGE_DELETE_EVENT = "messageDeleted";
 
 const Chat = () => {
-
   const { userData: user } = useSelector((state) => state.user);
   const { socket } = useSelector((state) => state.socket);
-  const logout = () => { };
+  const logout = () => {};
 
   const currentChat = useRef(null);
 
@@ -110,7 +110,7 @@ const Chat = () => {
   const getMessages = async () => {
     if (!currentChat.current?._id) return alert("No chat is selected");
 
-    if (!socket) return alert("Socket not available");
+    if (!socket) return toast.error("Socket not available");
 
     socket.emit(JOIN_CHAT_EVENT, currentChat.current?._id);
 
@@ -253,6 +253,7 @@ const Chat = () => {
   };
 
   useEffect(() => {
+    console.log("COmponent moubnt");
     getChats();
 
     const _currentChat = LocalStorage.get("currentChat");
@@ -304,7 +305,6 @@ const Chat = () => {
       <div className="w-full justify-between items-stretch h-screen flex flex-shrink-0">
         <div className="w-1/3 relative ring-white overflow-y-auto px-4">
           <div className="z-10 w-full sticky top-0 bg-dark px-2 py-4 flex justify-between items-center gap-4">
-
             <Input
               placeholder="Search user or group..."
               value={localSearchQuery}
@@ -328,10 +328,10 @@ const Chat = () => {
               .filter((chat) =>
                 localSearchQuery
                   ? getChatObjectMetadata(chat, user)
-                    .title?.toLocaleLowerCase()
-                    ?.includes(localSearchQuery)
+                      .title?.toLocaleLowerCase()
+                      ?.includes(localSearchQuery)
                   : // If there's no localSearchQuery, include all chats
-                  true
+                    true
               )
               .map((chat) => {
                 return (
@@ -386,10 +386,10 @@ const Chat = () => {
                                 i === 0
                                   ? "left-0 z-30"
                                   : i === 1
-                                    ? "left-2 z-20"
-                                    : i === 2
-                                      ? "left-4 z-10"
-                                      : ""
+                                  ? "left-2 z-20"
+                                  : i === 2
+                                  ? "left-4 z-10"
+                                  : ""
                               )}
                             />
                           );

@@ -31,6 +31,7 @@ const App = () => {
       dispatch(disconnectSocket());
     };
   }, [dispatch]);
+
   const location = useLocation();
   const hideNavbar = location.pathname.startsWith("/dashboard");
   return (
