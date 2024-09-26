@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { AiOutlineBell } from "react-icons/ai";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket = io(import.meta.env.VITE_SOCKET_URL);
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -162,7 +162,8 @@ const Navbar = () => {
                   to={page.path}
                   key={page.name}
                   className={({ isActive }) =>
-                    `${isActive ? "text-blue-500" : ""
+                    `${
+                      isActive ? "text-blue-500" : ""
                     } text-gray-700 hover:text-blue-500`
                   }
                 >
@@ -210,7 +211,8 @@ const Navbar = () => {
                 to={page.path}
                 key={page.name}
                 className={({ isActive }) =>
-                  `${isActive ? "text-blue-500" : ""
+                  `${
+                    isActive ? "text-blue-500" : ""
                   } text-gray-700 hover:text-blue-500`
                 }
               >
