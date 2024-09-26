@@ -14,6 +14,7 @@ import { classNames, requestHandler } from "../utils";
 import Button from "./Button";
 import Input from "./Input";
 import Select from "./Select";
+import toast from "react-hot-toast";
 
 const AddChatModal = ({ open, onClose, onSuccess }) => {
   const [users, setUsers] = useState([]);
@@ -35,7 +36,7 @@ const AddChatModal = ({ open, onClose, onSuccess }) => {
     );
   };
   const createNewChat = async () => {
-    if (!selectedUserId) return alert("Please select a user");
+    if (!selectedUserId) return toast.error("Please select a user");
 
     await requestHandler(
       async () => await createUserChat(selectedUserId),
@@ -43,7 +44,7 @@ const AddChatModal = ({ open, onClose, onSuccess }) => {
       (res) => {
         const { data } = res;
         if (res.statusCode === 200) {
-          alert("Chat with selected user already exists");
+          toast.success("Chat with selected user already exists");
           return;
         }
         onSuccess(data);
@@ -56,7 +57,7 @@ const AddChatModal = ({ open, onClose, onSuccess }) => {
   const createNewGroupChat = async () => {
     if (!groupName) return alert("Group name is required");
     if (!groupParticipants.length || groupParticipants.length < 2)
-      return alert("There must be at least 2 group participants");
+      return toast.error("There must be at least 2 group participants");
 
     await requestHandler(
       async () =>
@@ -187,12 +188,16 @@ const AddChatModal = ({ open, onClose, onSuccess }) => {
                           : "Select a user to chat..."
                       }
                       value={isGroupChat ? "" : selectedUserId || ""}
-                      options={users.map((user) => {
-                        return {
-                          label: user.username,
-                          value: user._id,
-                        };
-                      })}
+                      options={users
+                        .filter((user) => !groupParticipants.includes(user._id))
+                        .map((user) => {
+                          return {
+                            label: user.username,
+                            value: user._id,
+                          };
+                        })
+                      }
+
                       onChange={({ value }) => {
                         if (isGroupChat && !groupParticipants.includes(value)) {
                           // if user is creating a group chat track the participants in an array

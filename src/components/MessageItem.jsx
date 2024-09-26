@@ -21,22 +21,10 @@ const MessageItem = ({
 
   return (
     <>
-      {resizedImage && (
-        <div className="h-full z-40 p-8 overflow-hidden w-full absolute inset-0 bg-black/70 flex justify-center items-center">
-          <XMarkIcon
-            className="absolute top-5 right-5 w-9 h-9 text-white cursor-pointer"
-            onClick={() => setResizedImage(null)}
-          />
-          <img
-            className="w-full h-full object-contain"
-            src={resizedImage}
-            alt="chat image"
-          />
-        </div>
-      )}
+
       <div
         className={classNames(
-          "flex justify-start items-end gap-3 max-w-lg",
+          "flex justify-start items-end  gap-3 max-w-lg",
           isOwnMessage ? "ml-auto" : ""
         )}
       >

@@ -35,7 +35,6 @@ const ChatItem = ({
   };
 
   if (!chat) return null;
-
   return (
     <>
       <GroupChatDetailsModal
@@ -51,7 +50,7 @@ const ChatItem = ({
         onClick={() => onClick(chat)}
         onMouseLeave={() => setOpenOptions(false)}
         className={classNames(
-          "group p-4 my-2 flex justify-between gap-3 items-start cursor-pointer rounded-3xl hover:bg-secondary",
+          "group p-4 my-2 bg-gray-500 flex justify-between gap-3 items-start cursor-pointer rounded-3xl hover:bg-secondary",
           isActive ? "border-[1px] border-zinc-500 bg-secondary" : "",
           unreadCount > 0
             ? "border-[1px] border-success bg-success/20 font-bold"
