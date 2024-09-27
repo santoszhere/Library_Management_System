@@ -39,15 +39,12 @@ const LEAVE_CHAT_EVENT = "leaveChat";
 const UPDATE_GROUP_NAME_EVENT = "updateGroupName";
 const MESSAGE_DELETE_EVENT = "messageDeleted";
 
-
 const Chat = () => {
   const { userData: user } = useSelector((state) => state.user);
   const { socket } = useSelector((state) => state.socket);
 
-
   const [openOptions, setOpenOptions] = useState(false);
   const [openGroupInfo, setOpenGroupInfo] = useState(false);
-
 
   const currentChat = useRef(null);
 
@@ -186,7 +183,7 @@ const Chat = () => {
   };
 
   const onConnect = () => {
-    console.log("WOrking")
+    console.log("WOrking");
     setIsConnected(true);
   };
 
@@ -280,19 +277,21 @@ const Chat = () => {
     socket.on(UPDATE_GROUP_NAME_EVENT, onGroupNameChange);
     socket.on(MESSAGE_DELETE_EVENT, onMessageDelete);
     return () => {
-      socket.off(CONNECTED_EVENT, onConnect);
-      socket.off(DISCONNECT_EVENT, onDisconnect);
-      socket.off(TYPING_EVENT, handleOnSocketTyping);
-      socket.off(STOP_TYPING_EVENT, handleOnSocketStopTyping);
-      socket.off(MESSAGE_RECEIVED_EVENT, onMessageReceived);
-      socket.off(NEW_CHAT_EVENT, onNewChat);
-      socket.off(LEAVE_CHAT_EVENT, onChatLeave);
-      socket.off(UPDATE_GROUP_NAME_EVENT, onGroupNameChange);
-      socket.off(MESSAGE_DELETE_EVENT, onMessageDelete);
+      // socket.off(CONNECTED_EVENT, onConnect);
+      // socket.off(DISCONNECT_EVENT, onDisconnect);
+      // socket.off(TYPING_EVENT, handleOnSocketTyping);
+      // socket.off(STOP_TYPING_EVENT, handleOnSocketStopTyping);
+      // socket.off(MESSAGE_RECEIVED_EVENT, onMessageReceived);
+      // socket.off(NEW_CHAT_EVENT, onNewChat);
+      // socket.off(LEAVE_CHAT_EVENT, onChatLeave);
+      // socket.off(UPDATE_GROUP_NAME_EVENT, onGroupNameChange);
+      // socket.off(MESSAGE_DELETE_EVENT, onMessageDelete);
     };
   }, [socket, chats]);
 
-  const isGroupChat = chats.map(chat => chat.isGroupChat === true ? chat.name : '')
+  const isGroupChat = chats.map((chat) =>
+    chat.isGroupChat === true ? chat.name : ""
+  );
   return (
     <>
       <AddChatModal
@@ -310,7 +309,7 @@ const Chat = () => {
           setOpenGroupInfo(false);
         }}
         chatId={currentChat.current?._id}
-        onGroupDelete={() => { }}
+        onGroupDelete={() => {}}
       />
 
       <div className="w-full justify-between items-stretch h-screen flex flex-shrink-0">
@@ -339,10 +338,10 @@ const Chat = () => {
               .filter((chat) =>
                 localSearchQuery
                   ? getChatObjectMetadata(chat, user)
-                    .title?.toLocaleLowerCase()
-                    ?.includes(localSearchQuery)
+                      .title?.toLocaleLowerCase()
+                      ?.includes(localSearchQuery)
                   : // If there's no localSearchQuery, include all chats
-                  true
+                    true
               )
               .map((chat) => {
                 return (
@@ -383,47 +382,42 @@ const Chat = () => {
             <>
               <div className="p-4 sticky top-0 bg-dark z-20 flex justify-between items-center w-full border-b-[0.1px]  border-secondary">
                 <div className="flex justify-start items-center w-max gap-3">
-
-
-                  {
-                    isGroupChat.includes(currentChat.current?.name) && (
-
-                      <div className={classNames(
-                        "group p-1 my-2 flex justify-between gap-3 items-start cursor-pointer rounded-3xl bg-secondary")}
-                        onMouseLeave={() => setOpenOptions(false)}
+                  {isGroupChat.includes(currentChat.current?.name) && (
+                    <div
+                      className={classNames(
+                        "group p-1 my-2 flex justify-between gap-3 items-start cursor-pointer rounded-3xl bg-secondary"
+                      )}
+                      onMouseLeave={() => setOpenOptions(false)}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenOptions(!openOptions);
+                        }}
+                        className="self-center p-1 relative"
                       >
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenOptions(!openOptions);
-                          }}
-                          className="self-center p-1 relative"
+                        <EllipsisVerticalIcon className="h-6 w-6  transition-all ease-in-out duration-100 text-zinc-300" />
+                        <div
+                          className={classNames(
+                            "z-20 text-left absolute bottom-0 translate-y-full text-sm w-52 bg-dark rounded-2xl p-2 shadow-md border-[1px] border-secondary",
+                            openOptions ? "block" : "hidden"
+                          )}
                         >
-                          <EllipsisVerticalIcon className="h-6 w-6  transition-all ease-in-out duration-100 text-zinc-300" />
-                          <div
-                            className={classNames(
-                              "z-20 text-left absolute bottom-0 translate-y-full text-sm w-52 bg-dark rounded-2xl p-2 shadow-md border-[1px] border-secondary",
-                              openOptions ? "block" : "hidden"
-                            )}
+                          <p
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenGroupInfo(true);
+                            }}
+                            role="button"
+                            className="p-4 w-full rounded-lg inline-flex items-center hover:bg-secondary"
                           >
-                            <p
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenGroupInfo(true);
-                              }}
-                              role="button"
-                              className="p-4 w-full rounded-lg inline-flex items-center hover:bg-secondary"
-                            >
-                              <InformationCircleIcon className="h-4 w-4 mr-2" /> About group
-                            </p>
-
-                          </div>
-                        </button>
-
-                      </div>
-                    )
-                  }
+                            <InformationCircleIcon className="h-4 w-4 mr-2" />{" "}
+                            About group
+                          </p>
+                        </div>
+                      </button>
+                    </div>
+                  )}
 
                   {currentChat.current.isGroupChat ? (
                     <div className="w-12 relative h-12 flex-shrink-0 flex justify-start items-center flex-nowrap">
@@ -439,10 +433,10 @@ const Chat = () => {
                                 i === 0
                                   ? "left-0 z-30"
                                   : i === 1
-                                    ? "left-2 z-20"
-                                    : i === 2
-                                      ? "left-4 z-10"
-                                      : ""
+                                  ? "left-2 z-20"
+                                  : i === 2
+                                  ? "left-4 z-10"
+                                  : ""
                               )}
                             />
                           );

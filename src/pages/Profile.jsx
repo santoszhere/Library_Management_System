@@ -3,6 +3,7 @@ import {
   getCurrentUser,
   returnBook,
   updateUser,
+  getRecommendations,
 } from "../config/AxiosInstance";
 import { FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -14,6 +15,7 @@ import { AiOutlineMessage } from "react-icons/ai";
 const Profile = () => {
   const dispatch = useDispatch();
   const [userProfile, setUserProfile] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     username: "",
@@ -36,28 +38,40 @@ const Profile = () => {
       });
     } catch (error) {
       console.error("Error fetching user profile:", error);
+      toast.error("Failed to load user profile.");
+    }
+  };
+
+  const fetchRecommendations = async () => {
+    try {
+      if (!userProfile) return; // Ensure userProfile is available before fetching recommendations
+      const { data } = await getRecommendations(userProfile._id);
+      setRecommendations(data.data);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      toast.error("Failed to load recommendations.");
     }
   };
 
   const handleReturnBook = async (id) => {
     try {
       const { data } = await returnBook(id);
-      getUserProfile();
-
-      if (!data.data) {
-        toast.error("Failed to return book");
-      }
+      await getUserProfile(); // Fetch the user profile again after returning a book
       toast.success(data.message);
       dispatch(fetchCurrentUser());
     } catch (error) {
       console.error("Error returning book:", error);
+      toast.error("Failed to return book.");
     }
   };
 
   const handleEditSubmit = async () => {
     try {
-      await updateUser({ username: editData.username, newPassword: editData.newPassword });
-      getUserProfile();
+      await updateUser({
+        username: editData.username,
+        newPassword: editData.newPassword,
+      });
+      await getUserProfile(); // Refresh user profile
       setIsEditing(false);
       toast.success("Profile updated successfully.");
     } catch (error) {
@@ -68,7 +82,15 @@ const Profile = () => {
 
   useEffect(() => {
     getUserProfile();
-  }, []);
+    // No dependency array means this runs on every render.
+    return () => {
+      // Optional: Cleanup logic if needed, like aborting requests.
+    };
+  }, []); // Empty dependency array ensures it runs only once on mount
+
+  useEffect(() => {
+    fetchRecommendations(); // Fetch recommendations whenever userProfile changes
+  }, [userProfile]);
 
   if (!userProfile) return <div>Loading...</div>;
 
@@ -162,58 +184,92 @@ const Profile = () => {
         </p>
       </div>
 
+      {/* Recommendations Section */}
+      <div className="bg-white shadow-lg rounded-lg p-6 mt-8">
+        <h2 className="text-2xl font-semibold mb-4">Recommendations</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {recommendations.length > 0 ? (
+            recommendations.map((book) => (
+              <div
+                key={book._id}
+                className="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col md:flex-row"
+              >
+                <div className="flex flex-col items-center md:items-start">
+                  <img
+                    src={book.coverImage}
+                    alt={book.title}
+                    className="w-32 h-48 object-cover rounded-lg shadow-md mb-4"
+                  />
+                </div>
+                <div className="flex-grow md:ml-6">
+                  <h3 className="text-xl font-semibold mb-2">{book.title}</h3>
+                  <p className="text-gray-600">Author: {book.author}</p>
+                  <p className="text-gray-600">Genre: {book.genre}</p>
+                  <p className="text-gray-600">
+                    Suggested For: {book.suggestedFor}{" "}
+                    {/* Adjust based on your data */}
+                  </p>
+                  <button
+                    onClick={() => console.log("HEllo world")} // Example action for clicking on a recommendation
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-600 transition duration-300"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-600">
+              No recommendations available at the moment.
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Edit Profile Modal */}
       {isEditing && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3">
-            <h2 className="text-2xl font-semibold mb-4">Edit Profile</h2>
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
             <input
-              className="block w-full text-xl font-semibold border border-gray-300 p-2 rounded mb-2"
+              type="text"
+              placeholder="Username"
               value={editData.username}
               onChange={(e) =>
                 setEditData({ ...editData, username: e.target.value })
               }
-              placeholder="Username"
+              className="border border-gray-300 rounded-md p-2 mb-4 w-full"
             />
             <input
-              className="block w-full text-gray-600 border border-gray-300 p-2 rounded mb-2"
+              type="email"
+              placeholder="Email"
               value={editData.email}
               onChange={(e) =>
                 setEditData({ ...editData, email: e.target.value })
               }
-              disabled
-              placeholder="Email"
+              className="border border-gray-300 rounded-md p-2 mb-4 w-full"
             />
             <input
               type="password"
-              className="block w-full border border-gray-300 p-2 rounded mb-2"
-              value={editData.oldPassword}
-              onChange={(e) =>
-                setEditData({ ...editData, oldPassword: e.target.value })
-              }
-              placeholder="Old Password"
-            />
-            <input
-              type="password"
-              className="block w-full border border-gray-300 p-2 rounded mb-4"
+              placeholder="New Password"
               value={editData.newPassword}
               onChange={(e) =>
                 setEditData({ ...editData, newPassword: e.target.value })
               }
-              placeholder="New Password"
+              className="border border-gray-300 rounded-md p-2 mb-4 w-full"
             />
-            <div className="flex justify-between">
-              <button
-                onClick={handleEditSubmit}
-                className="bg-green-500 text-white px-4 py-2 rounded-md shadow hover:bg-green-600 flex items-center"
-              >
-                <FiCheck className="mr-2" /> Save
-              </button>
+            <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setIsEditing(false)}
-                className="bg-gray-500 text-white px-4 py-2 rounded-md shadow hover:bg-gray-600 flex items-center"
+                className="bg-gray-300 text-black px-4 py-2 rounded-md"
               >
-                <FiX className="mr-2" /> Cancel
+                <FiX /> Cancel
+              </button>
+              <button
+                onClick={handleEditSubmit}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md"
+              >
+                <FiCheck /> Save
               </button>
             </div>
           </div>

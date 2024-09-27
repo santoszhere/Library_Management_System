@@ -20,6 +20,7 @@ import Chat from "./pages/Chat";
 import { useDispatch } from "react-redux";
 import { disconnectSocket, initializeSocket } from "./store/slices/socketSlice";
 import { useEffect } from "react";
+import BookDetailsPage from "./pages/BookDetailsPage";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -50,6 +51,7 @@ const App = () => {
           <Route path="/chat" element={<Chat />} />
           <Route path="/profile/:userId" element={<OtherUserProfile />} />
           <Route path="/books" element={<Books />} />
+          <Route path="/books/read/:bookId" element={<BookDetailsPage />} />
           <Route path="/dashboard" element={<Dashboard />}>
             <Route path="charts" element={<Chart />} />
             <Route path="customers" element={<DashboardUser />} />

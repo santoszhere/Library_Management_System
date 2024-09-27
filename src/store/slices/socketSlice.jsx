@@ -2,8 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 import socketio from "socket.io-client";
 
 const getSocket = () => {
-  console.log(import.meta.env.VITE_SOCKET_URL, "SOCKET URL");
-  console.log(import.meta.env.VITE_BASE_URL, "BASE URL");
   return socketio(import.meta.env.VITE_SOCKET_URL, {
     withCredentials: true,
   });

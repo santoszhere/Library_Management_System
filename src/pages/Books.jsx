@@ -114,12 +114,21 @@ const Books = () => {
                   <p className="font-medium text-yellow-600">
                     Borrowed by: {book.borrowedBy.username}
                   </p>
-                  <Link
-                    to={`/profile/${book.borrowedBy._id}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    View Profile
-                  </Link>
+                  <div className="flex items-center justify-between">
+                    <Link
+                      to={`/profile/${book.borrowedBy._id}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      View Profile
+                    </Link>
+
+                    <Link
+                      to={`/books/read/${book._id}`}
+                      className="text-green-600 hover:underline"
+                    >
+                      View Book
+                    </Link>
+                  </div>
                 </div>
               ) : book.availability ? (
                 <p className="text-sm text-green-600 font-medium mb-4">

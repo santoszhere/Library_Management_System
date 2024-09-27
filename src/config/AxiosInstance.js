@@ -10,6 +10,12 @@ const loginUSER = (data) => {
   return apiClient.post("/users/login", data);
 };
 
+const getRecommendations = (userId) => {
+  return apiClient.get(`/recommendation/collaborative/${userId}`);
+};
+const getGenreBasedRecommendations = (userId) => {
+  return apiClient.get(`/recommendation/genre/${userId}`);
+};
 const getCurrentUser = () => {
   return apiClient.get("/users/current-user");
 };
@@ -97,7 +103,6 @@ const updateUser = ({ username, oldPassword, newPassword }) => {
 const getAllBooks = () => {
   return apiClient.get("/books/get-all-books");
 };
-
 const adminGetALlUser = () => {
   return apiClient.get("/admin/get-all-users");
 };
@@ -142,8 +147,15 @@ const getAdminStatictics = () => {
 const getOtherUser = (userId) => {
   return apiClient.get(`/users/get-other-user/${userId}`);
 };
+const fetchReview = (bookId) => {
+  return apiClient.get(`/review/get-review/${bookId}`);
+};
 export {
   adminGetALlUser,
+  fetchReview,
+  getRecommendations,
+  getSingleBook,
+  getGenreBasedRecommendations,
   adminDeleteUser,
   adminUpdateRole,
   adminGetAllBook,
@@ -153,7 +165,6 @@ export {
   getOtherUser,
   getCategory,
   createBook,
-  getSingleBook,
   editBook,
   addParticipantToGroup,
   createGroupChat,
