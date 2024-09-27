@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { FaRegCommentDots, FaPaperPlane } from "react-icons/fa";
+import { postReview } from "../config/AxiosInstance";
 
-const Review = ({ review }) => {
+const Review = ({ review, getReview }) => {
   const [showReplies, setShowReplies] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const [newReply, setNewReply] = useState("");
-
+  const [refresh, setRefresh] = useState(false)
   const toggleReplies = () => {
     setShowReplies(!showReplies);
   };
@@ -14,16 +16,18 @@ const Review = ({ review }) => {
     setNewReply(e.target.value);
   };
 
-  const handleSubmitReply = () => {
-    //   {
-    //     "bookId":"66ed5a1f4056a4bd55c9e452",
-    //     "content":"Forth review by arjun",
-    //     "parentReviewId":"66f68e6fbb9bff49b36a647b"
-    // }
-
-    console.log("New reply submitted:", newReply);
+  const handleSubmitReply = async () => {
     setNewReply("");
     setShowInput(false);
+
+    const { data } = await postReview({ bookId: review.bookId, content: newReply, parentReviewId: review._id })
+    if (data?.data) {
+      toast.success(data?.message)
+      setRefresh(!refresh)
+    }
+    if (!data?.data) {
+      toast.error("Failed to add review")
+    }
   };
 
   return (
