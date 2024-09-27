@@ -150,9 +150,13 @@ const getOtherUser = (userId) => {
 const fetchReview = (bookId) => {
   return apiClient.get(`/review/get-review/${bookId}`);
 };
+const postReview = (data) => {
+  return apiClient.post("review/add-review", { data });
+};
 export {
   adminGetALlUser,
   fetchReview,
+  postReview,
   getRecommendations,
   getSingleBook,
   getGenreBasedRecommendations,

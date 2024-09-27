@@ -15,6 +15,12 @@ const Review = ({ review }) => {
   };
 
   const handleSubmitReply = () => {
+    //   {
+    //     "bookId":"66ed5a1f4056a4bd55c9e452",
+    //     "content":"Forth review by arjun",
+    //     "parentReviewId":"66f68e6fbb9bff49b36a647b"
+    // }
+
     console.log("New reply submitted:", newReply);
     setNewReply("");
     setShowInput(false);
