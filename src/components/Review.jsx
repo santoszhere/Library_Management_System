@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { FaRegCommentDots, FaPaperPlane } from "react-icons/fa";
 import { postReview } from "../config/AxiosInstance";
 
-const Review = ({ review, getReview }) => {
+const Review = ({ review }) => {
   const [showReplies, setShowReplies] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const [newReply, setNewReply] = useState("");
