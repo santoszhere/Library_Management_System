@@ -1,48 +1,78 @@
 import { useEffect, useState } from "react";
-import { fetchReview, postReview } from "../config/AxiosInstance";
+import { fetchReview, postReview, deleteReview, editReview } from "../config/AxiosInstance";
 import Review from "./Review";
 import { FaPaperPlane, FaRegCommentDots } from "react-icons/fa";
-import toast from 'react-hot-toast'
+import toast from "react-hot-toast";
 
 const ReviewList = ({ bookId }) => {
   const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
-  const [showInput, setShowInput] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [newReply, setNewReply] = useState("");
-  const [refresh, setRefresh] = useState(false)
-
+  const [showInput, setShowInput] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
   const handleReplyChange = (e) => {
     setNewReply(e.target.value);
   };
 
   const handleSubmitReply = async () => {
-    setNewReply("");
-    setShowInput(false);
-
-    const { data } = await postReview({ bookId, content: newReply, parentReviewId: null })
-    if (data?.data) {
-      toast.success(data?.message)
-      setRefresh(!refresh)
-    }
-    if (!data?.data) {
-      toast.error("Failed to add review")
+    try {
+      const { data } = await postReview({ bookId, content: newReply, parentReviewId: null });
+      if (data?.data) {
+        toast.success("Review added successfully");
+        setNewReply("");
+        setShowInput(false);
+        setRefresh(!refresh); // Trigger refresh to load new reviews
+      } else {
+        toast.error("Failed to add review");
+      }
+    } catch (error) {
+      toast.error("Error adding review");
     }
   };
 
-  const getReview = async () => {
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      const { data } = await deleteReview(reviewId);
+      if (data?.success) {
+        toast.success("Review deleted successfully");
+        setRefresh(!refresh); // Trigger refresh after deletion
+      } else {
+        toast.error("Failed to delete review");
+      }
+    } catch (error) {
+      toast.error("Error deleting review");
+    }
+  };
+
+  const handleEditReview = async (reviewId, updatedContent) => {
+    try {
+      const { data } = await editReview(reviewId, { content: updatedContent });
+      if (data?.success) {
+        toast.success("Review updated successfully");
+        setRefresh(!refresh); // Trigger refresh after edit
+      } else {
+        toast.error("Failed to update review");
+      }
+    } catch (error) {
+      toast.error("Error updating review");
+    }
+  };
+
+  const getReviews = async () => {
     try {
       const { data } = await fetchReview(bookId);
       setReviews(data?.data || []);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error loading reviews");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    getReview();
+    getReviews();
   }, [bookId, refresh]);
 
   if (loading) {
@@ -52,17 +82,27 @@ const ReviewList = ({ bookId }) => {
   return (
     <div>
       {reviews.length > 0 ? (
-        reviews.map((review) => <Review key={review._id} review={review} />)
+        reviews.map((review) => (
+          <Review
+            key={review._id}
+            review={review}
+            refreshReviews={() => setRefresh(!refresh)}
+            handleDeleteReview={handleDeleteReview}
+            handleEditReview={handleEditReview}
+          />
+        ))
       ) : (
         <p>No reviews yet.</p>
       )}
+
+      {/* Add a new review */}
       <div className="mt-2">
         <button
           className="flex items-center text-blue-600 hover:text-blue-800 focus:outline-none"
           onClick={() => setShowInput(!showInput)}
         >
           <FaRegCommentDots className="mr-1" />
-          Add a Reply
+          Add a Review
         </button>
       </div>
 
@@ -72,7 +112,7 @@ const ReviewList = ({ bookId }) => {
             type="text"
             value={newReply}
             onChange={handleReplyChange}
-            placeholder="Write a reply..."
+            placeholder="Write a review..."
             className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
           />
           <button
@@ -82,8 +122,7 @@ const ReviewList = ({ bookId }) => {
             <FaPaperPlane />
           </button>
         </div>
-      )
-      }
+      )}
     </div>
   );
 };

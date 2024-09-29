@@ -157,6 +157,17 @@ const postReview = ({ bookId, content, parentReviewId }) => {
         parentReviewId
     });
 };
+const deleteReview = (reviewId) => {
+    return apiClient.delete(`/review/update-review/`, {
+        data: {
+            reviewId,
+        }
+    });
+};
+
+const editReview = ({ reviewId, content }) => {
+    return apiClient.patch(`/review/update-review/`, { reviewId, content });
+};
 export {
     adminGetALlUser,
     fetchReview,
@@ -165,6 +176,8 @@ export {
     getSingleBook,
     getGenreBasedRecommendations,
     adminDeleteUser,
+    editReview,
+    deleteReview,
     adminUpdateRole,
     adminGetAllBook,
     adminDeleteBook,
