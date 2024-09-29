@@ -104,7 +104,6 @@ const Chat = () => {
         const { data } = res;
         setChats(data || []);
       },
-      alert
     );
   };
 
@@ -309,7 +308,7 @@ const Chat = () => {
           setOpenGroupInfo(false);
         }}
         chatId={currentChat.current?._id}
-        onGroupDelete={() => {}}
+        onGroupDelete={() => { }}
       />
 
       <div className="w-full justify-between items-stretch h-screen flex flex-shrink-0">
@@ -338,10 +337,10 @@ const Chat = () => {
               .filter((chat) =>
                 localSearchQuery
                   ? getChatObjectMetadata(chat, user)
-                      .title?.toLocaleLowerCase()
-                      ?.includes(localSearchQuery)
+                    .title?.toLocaleLowerCase()
+                    ?.includes(localSearchQuery)
                   : // If there's no localSearchQuery, include all chats
-                    true
+                  true
               )
               .map((chat) => {
                 return (
@@ -433,10 +432,10 @@ const Chat = () => {
                                 i === 0
                                   ? "left-0 z-30"
                                   : i === 1
-                                  ? "left-2 z-20"
-                                  : i === 2
-                                  ? "left-4 z-10"
-                                  : ""
+                                    ? "left-2 z-20"
+                                    : i === 2
+                                      ? "left-4 z-10"
+                                      : ""
                               )}
                             />
                           );

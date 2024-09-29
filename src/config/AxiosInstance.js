@@ -147,8 +147,8 @@ const getAdminStatictics = () => {
 const getOtherUser = (userId) => {
     return apiClient.get(`/users/get-other-user/${userId}`);
 };
-const fetchReview = (bookId) => {
-    return apiClient.get(`/review/get-review/${bookId}`);
+const fetchReview = ({ bookId, page, limit }) => {
+    return apiClient.get(`/review/get-review/${bookId}?page=${page}&limit=${limit}`)
 };
 const postReview = ({ bookId, content, parentReviewId }) => {
     return apiClient.post("review/add-review", {

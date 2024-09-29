@@ -1,28 +1,33 @@
 import { useEffect, useState } from "react";
 import { fetchReview, postReview, deleteReview, editReview } from "../config/AxiosInstance";
 import Review from "./Review";
-import { FaPaperPlane, FaRegCommentDots } from "react-icons/fa";
+import { FaPaperPlane } from "react-icons/fa";
 import toast from "react-hot-toast";
 
-const ReviewList = ({ bookId }) => {
+const ReviewList = ({ bookId, userProfile }) => {
   const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [newReply, setNewReply] = useState("");
   const [showInput, setShowInput] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const reviewsPerPage = 6;
 
   const handleReplyChange = (e) => {
     setNewReply(e.target.value);
   };
 
   const handleSubmitReply = async () => {
+    if (!newReply.trim()) return;
+
     try {
       const { data } = await postReview({ bookId, content: newReply, parentReviewId: null });
       if (data?.data) {
         toast.success("Review added successfully");
         setNewReply("");
         setShowInput(false);
-        setRefresh(!refresh); // Trigger refresh to load new reviews
+        setRefresh(!refresh);
       } else {
         toast.error("Failed to add review");
       }
@@ -36,7 +41,7 @@ const ReviewList = ({ bookId }) => {
       const { data } = await deleteReview(reviewId);
       if (data?.success) {
         toast.success("Review deleted successfully");
-        setRefresh(!refresh); // Trigger refresh after deletion
+        setRefresh(!refresh);
       } else {
         toast.error("Failed to delete review");
       }
@@ -50,7 +55,7 @@ const ReviewList = ({ bookId }) => {
       const { data } = await editReview(reviewId, { content: updatedContent });
       if (data?.success) {
         toast.success("Review updated successfully");
-        setRefresh(!refresh); // Trigger refresh after edit
+        setRefresh(!refresh);
       } else {
         toast.error("Failed to update review");
       }
@@ -61,26 +66,71 @@ const ReviewList = ({ bookId }) => {
 
   const getReviews = async () => {
     try {
-      const { data } = await fetchReview(bookId);
-      setReviews(data?.data || []);
+      console.log(currentPage, reviewsPerPage)
+      const { data } = await fetchReview({ bookId, page: currentPage, limit: reviewsPerPage });
+      setTotalReviews(data?.data?.totalCount || 0);
+      setTotalPages(data?.data?.totalPages || 1);
+      setReviews(data?.data?.reviews || []);
     } catch (error) {
       console.error(error);
       toast.error("Error loading reviews");
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
     getReviews();
-  }, [bookId, refresh]);
+  }, [bookId, refresh, currentPage]);
 
-  if (loading) {
-    return <p>Loading reviews...</p>;
-  }
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSubmitReply();
+    }
+  };
 
   return (
     <div>
+      {/* Add a new review section */}
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold">Add a Review</h2>
+        <div className="flex mt-2">
+          {userProfile?.image && (
+            <img
+              src={userProfile.image}
+              alt="User profile"
+              className="w-10 h-10 rounded-full mr-2"
+            />
+          )}
+          <input
+            type="text"
+            value={newReply}
+            onChange={handleReplyChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Write a review..."
+            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+          />
+          <button
+            onClick={handleSubmitReply}
+            className="ml-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 focus:outline-none"
+          >
+            <FaPaperPlane />
+          </button>
+        </div>
+      </div>
+
+      {/* Section for user reviews */}
+      <h2 className="text-lg font-semibold mb-2">User Reviews ({totalReviews})</h2>
       {reviews.length > 0 ? (
         reviews.map((review) => (
           <Review
@@ -95,31 +145,22 @@ const ReviewList = ({ bookId }) => {
         <p>No reviews yet.</p>
       )}
 
-      {/* Add a new review */}
-      <div className="mt-2">
-        <button
-          className="flex items-center text-blue-600 hover:text-blue-800 focus:outline-none"
-          onClick={() => setShowInput(!showInput)}
-        >
-          <FaRegCommentDots className="mr-1" />
-          Add a Review
-        </button>
-      </div>
-
-      {showInput && (
-        <div className="mt-2 flex">
-          <input
-            type="text"
-            value={newReply}
-            onChange={handleReplyChange}
-            placeholder="Write a review..."
-            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
-          />
+      {/* Pagination Controls */}
+      {totalReviews > reviewsPerPage && (
+        <div className="flex justify-between mt-4">
           <button
-            onClick={handleSubmitReply}
-            className="ml-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 focus:outline-none"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
           >
-            <FaPaperPlane />
+            Previous
+          </button>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage >= totalPages}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+          >
+            Next
           </button>
         </div>
       )}

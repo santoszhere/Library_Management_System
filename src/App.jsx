@@ -21,6 +21,7 @@ import { useDispatch } from "react-redux";
 import { disconnectSocket, initializeSocket } from "./store/slices/socketSlice";
 import { useEffect } from "react";
 import BookDetailsPage from "./pages/BookDetailsPage";
+import Booksettings from "./pages/Booksettings";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -57,12 +58,14 @@ const App = () => {
             <Route path="customers" element={<DashboardUser />} />
             <Route path="books" element={<DashboardBook />} />
             <Route path="book/create" element={<CreateBook />} />
+            <Route path="books/setting" element={<Booksettings />} />
             <Route
               path="book/edit/:id"
               element={<EditBook isProduct={true} />}
             />
           </Route>
         </Route>
+
       </Routes>
     </div>
   );

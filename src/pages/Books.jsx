@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCurrentUser } from "../store/slices/authSlice";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { HiEye } from "react-icons/hi"; // Import the eye icon from react-icons
 
 const Books = () => {
   const { userData } = useSelector((state) => state.user);
@@ -15,9 +17,7 @@ const Books = () => {
 
   const formatDueDate = (dueDate) => {
     const date = new Date(dueDate);
-    const formattedDate = date.toLocaleDateString();
-
-    return formattedDate;
+    return date.toLocaleDateString();
   };
 
   useEffect(() => {
@@ -39,7 +39,6 @@ const Books = () => {
 
   const handleBorrowBook = async (bookId) => {
     setLoadingBookId(bookId);
-
     try {
       const { data } = await borrowBook(bookId);
       if (data.statusCode !== 200) {
@@ -69,37 +68,74 @@ const Books = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div
+    <motion.div
+      className="container mx-auto p-6"
+      initial={{ opacity: 0, x: -100 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
         className="relative bg-cover bg-center h-96 rounded-lg shadow-lg overflow-hidden mb-8"
         style={{ backgroundImage: "url('./image-3.jpg')" }}
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center">
-          <h1 className="text-5xl font-bold text-white mb-4 text-center">
+          <motion.h1
+            className="text-5xl font-bold text-white mb-4 text-center"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
             Discover, Learn, and Grow
-          </h1>
-          <p className="text-lg text-gray-200 text-center max-w-2xl">
+          </motion.h1>
+          <motion.p
+            className="text-lg text-gray-200 text-center max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
             Dive into our extensive collection of books across genres. Whether
             you're looking for inspiration, knowledge, or entertainment, we have
             something for everyone. Start your reading journey today!
-          </p>
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Book Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
         {books && books.length > 0 ? (
-          books.map((book) => (
-            <div
+          books.map((book, index) => (
+            <motion.div
               key={book._id}
               className="border border-gray-200 rounded-lg shadow-lg bg-white p-4 transition hover:shadow-xl"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{
+                opacity: 1,
+                scale: 1,
+              }} // Animate when in view
+              transition={{ duration: 0.5, delay: index * 0.1 }} // Stagger effect
+              whileHover={{ scale: 1.05 }} // Hover effect
             >
               {book.coverImage && (
-                <img
-                  src={book.coverImage}
-                  alt={book.title}
-                  className="w-full h-40 object-cover rounded-lg mb-4"
-                />
+                <div className="relative">
+                  <img
+                    src={book.coverImage}
+                    alt={book.title}
+                    className="w-full h-40 object-cover rounded-lg mb-4"
+                  />
+                  <Link
+                    to={`/books/read/${book._id}`}
+                    className="absolute top-2 right-2 text-white bg-blue-600 p-2 rounded-full hover:bg-blue-700 transition"
+                    title="View Book"
+                  >
+                    <HiEye className="w-5 h-5" />
+                    <span className="absolute left-1/2 transform -translate-x-1/2 mt-1 hidden group-hover:block bg-black text-white text-xs rounded-md px-2 py-1">
+                      View Book
+                    </span>
+                  </Link>
+                </div>
               )}
               <h2 className="text-lg font-semibold text-gray-900 truncate">
                 {book.title}
@@ -121,13 +157,6 @@ const Books = () => {
                     >
                       View Profile
                     </Link>
-
-                    <Link
-                      to={`/books/read/${book._id}`}
-                      className="text-green-600 hover:underline"
-                    >
-                      View Book
-                    </Link>
                   </div>
                 </div>
               ) : book.availability ? (
@@ -143,11 +172,10 @@ const Books = () => {
               {/* Borrow Button or Unavailable Text */}
               {book.availability ? (
                 <button
-                  className={`w-full ${
-                    loadingBookId === book._id
-                      ? "bg-gray-500"
-                      : "bg-blue-600 hover:bg-blue-700"
-                  } text-white py-2 px-4 rounded-lg transition font-medium`}
+                  className={`w-full ${loadingBookId === book._id
+                    ? "bg-gray-500"
+                    : "bg-blue-600 hover:bg-blue-700"
+                    } text-white py-2 px-4 rounded-lg transition font-medium`}
                   onClick={() => handleBorrowBook(book._id)}
                   disabled={loadingBookId === book._id}
                 >
@@ -164,7 +192,7 @@ const Books = () => {
                   You borrowed this book.
                 </p>
               )}
-            </div>
+            </motion.div>
           ))
         ) : (
           <div className="col-span-full text-center text-xl text-gray-500">
@@ -172,7 +200,7 @@ const Books = () => {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

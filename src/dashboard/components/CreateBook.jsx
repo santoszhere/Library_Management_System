@@ -6,6 +6,7 @@ import { createBook } from "../../config/AxiosInstance";
 import toast from "react-hot-toast";
 import { bookValidationSchema } from "../../constants/constants";
 import { useNavigate } from "react-router-dom";
+import FormikTextarea from "../../formik/FormikTextArea";
 
 const CreateBook = () => {
   const [imagePreview, setImagePreview] = useState(null);
@@ -16,6 +17,7 @@ const CreateBook = () => {
     genre: "",
     publicationYear: 0,
     isbn: 0,
+    description: "",
     avatar: null,
   };
 
@@ -26,16 +28,18 @@ const CreateBook = () => {
     formData.append("genre", values.genre);
     formData.append("publicationYear", parseInt(values.publicationYear));
     formData.append("isbn", parseInt(values.isbn));
+    formData.append("description", values.description);
     formData.append("avatar", values.avatar);
+
 
     const { data } = await createBook(formData);
 
     console.log(data);
     if (data.statusCode === 201) {
+      navigate("/dashboard/books");
       resetForm();
       setImagePreview(null);
       toast.success(data?.message);
-      navigate("/dashboard/books");
     }
   };
 
@@ -77,6 +81,11 @@ const CreateBook = () => {
                   label="Publication Year"
                   required={true}
                   name="publicationYear"
+                />
+                <FormikTextarea
+                  name="description"
+                  label="Description"
+                  required={true}
                 />
                 <FormikInput
                   type="number"

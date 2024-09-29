@@ -7,9 +7,11 @@ import ReviewList from "../components/ReviewList";
 const BookDetailsPage = () => {
   const { bookId } = useParams();
   const [book, setBook] = useState(null);
+  const [showDescription, setShowDescription] = useState(false); // State to toggle description visibility
 
   const getBook = async () => {
     const { data } = await getSingleBook(bookId);
+    console.log(data, "Data");
     if (data?.data) {
       setBook(data?.data);
     }
@@ -26,6 +28,10 @@ const BookDetailsPage = () => {
     return <div className="text-center">Loading...</div>;
   }
 
+  const toggleDescription = () => {
+    setShowDescription((prev) => !prev);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-lg p-6 transition-transform transform hover:scale-105 duration-300 ease-in-out">
@@ -34,7 +40,7 @@ const BookDetailsPage = () => {
             <img
               src={book.coverImage}
               alt={book.title}
-              className="rounded-lg shadow-md"
+              className="rounded-lg shadow-md w-full" // Full width image
             />
           </div>
           <div className="md:w-2/3 md:pl-6">
@@ -46,22 +52,38 @@ const BookDetailsPage = () => {
             </p>
             <p className="text-gray-600">ISBN: {book.isbn}</p>
             <p
-              className={`text-sm ${
-                book.availability ? "text-green-600" : "text-red-600"
-              }`}
+              className={`text-sm ${book.availability ? "text-green-600" : "text-red-600"
+                }`}
             >
               {book.availability ? "Available" : "Not Available"}
             </p>
             <div className="mt-4">
               <p className="text-gray-700">
-                Borrowed By: {book.borrowedBy.username}
+                Borrowed By: {book.borrowedBy ? book.borrowedBy.username : "No one"}
               </p>
               <p className="text-gray-500">
                 Due Date: {new Date(book.dueDate).toLocaleDateString()}
               </p>
             </div>
+            <button
+              onClick={toggleDescription}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300"
+            >
+              {showDescription ? "Hide Description" : "Read Book"}
+            </button>
           </div>
         </div>
+
+        {/* Description Section - Full Width */}
+        {showDescription && (
+          <div className="mt-4 bg-gray-100 p-4 rounded-lg">
+            {book.description ? (
+              <p className="text-gray-700">{book.description}</p>
+            ) : (
+              <p className="text-gray-500">No description available for this book.</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Review Section */}

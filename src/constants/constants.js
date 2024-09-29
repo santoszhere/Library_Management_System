@@ -95,6 +95,7 @@ export const bookValidationSchema = yup.object({
         .required("This field is required"),
     author: yup.string().required("This field is required"),
     genre: yup.string().required("This field is required"),
+    description: yup.string().required("This field is required"),
     publicationYear: yup.number().required("This field is required"),
     isbn: yup.number().required("This field is required"),
     avatar: yup.mixed(),
