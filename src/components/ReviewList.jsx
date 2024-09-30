@@ -1,19 +1,24 @@
 import { useEffect, useState } from "react";
-import { fetchReview, postReview, deleteReview, editReview } from "../config/AxiosInstance";
+import {
+  fetchReview,
+  postReview,
+  deleteReview,
+  editReview,
+} from "../config/AxiosInstance";
 import Review from "./Review";
 import { FaPaperPlane } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
-const ReviewList = ({ bookId, userProfile }) => {
+const ReviewList = ({ bookId }) => {
   const [reviews, setReviews] = useState([]);
   const [newReply, setNewReply] = useState("");
-  const [showInput, setShowInput] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalReviews, setTotalReviews] = useState(0);
   const reviewsPerPage = 6;
-
+  const { userData } = useSelector((state) => state.user);
   const handleReplyChange = (e) => {
     setNewReply(e.target.value);
   };
@@ -22,11 +27,14 @@ const ReviewList = ({ bookId, userProfile }) => {
     if (!newReply.trim()) return;
 
     try {
-      const { data } = await postReview({ bookId, content: newReply, parentReviewId: null });
+      const { data } = await postReview({
+        bookId,
+        content: newReply,
+        parentReviewId: null,
+      });
       if (data?.data) {
         toast.success("Review added successfully");
         setNewReply("");
-        setShowInput(false);
         setRefresh(!refresh);
       } else {
         toast.error("Failed to add review");
@@ -66,8 +74,12 @@ const ReviewList = ({ bookId, userProfile }) => {
 
   const getReviews = async () => {
     try {
-      console.log(currentPage, reviewsPerPage)
-      const { data } = await fetchReview({ bookId, page: currentPage, limit: reviewsPerPage });
+      const { data } = await fetchReview({
+        bookId,
+        page: currentPage,
+        limit: reviewsPerPage,
+      });
+      console.log(data, "Main data");
       setTotalReviews(data?.data?.totalCount || 0);
       setTotalPages(data?.data?.totalPages || 1);
       setReviews(data?.data?.reviews || []);
@@ -105,9 +117,9 @@ const ReviewList = ({ bookId, userProfile }) => {
       <div className="mb-4">
         <h2 className="text-lg font-semibold">Add a Review</h2>
         <div className="flex mt-2">
-          {userProfile?.image && (
+          {userData?.avatar && (
             <img
-              src={userProfile.image}
+              src={userData?.avatar}
               alt="User profile"
               className="w-10 h-10 rounded-full mr-2"
             />
@@ -130,17 +142,12 @@ const ReviewList = ({ bookId, userProfile }) => {
       </div>
 
       {/* Section for user reviews */}
-      <h2 className="text-lg font-semibold mb-2">User Reviews ({totalReviews})</h2>
+      <h2 className="text-lg font-semibold mb-2">
+        User Reviews ({totalReviews})
+      </h2>
+
       {reviews.length > 0 ? (
-        reviews.map((review) => (
-          <Review
-            key={review._id}
-            review={review}
-            refreshReviews={() => setRefresh(!refresh)}
-            handleDeleteReview={handleDeleteReview}
-            handleEditReview={handleEditReview}
-          />
-        ))
+        <Review reviews={reviews} />
       ) : (
         <p>No reviews yet.</p>
       )}
