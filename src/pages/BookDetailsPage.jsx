@@ -11,7 +11,6 @@ const BookDetailsPage = () => {
 
   const getBook = async () => {
     const { data } = await getSingleBook(bookId);
-    console.log(data, "Data");
     if (data?.data) {
       setBook(data?.data);
     }
@@ -52,14 +51,16 @@ const BookDetailsPage = () => {
             </p>
             <p className="text-gray-600">ISBN: {book.isbn}</p>
             <p
-              className={`text-sm ${book.availability ? "text-green-600" : "text-red-600"
-                }`}
+              className={`text-sm ${
+                book.availability ? "text-green-600" : "text-red-600"
+              }`}
             >
               {book.availability ? "Available" : "Not Available"}
             </p>
             <div className="mt-4">
               <p className="text-gray-700">
-                Borrowed By: {book.borrowedBy ? book.borrowedBy.username : "No one"}
+                Borrowed By:{" "}
+                {book.borrowedBy ? book.borrowedBy.username : "No one"}
               </p>
               <p className="text-gray-500">
                 Due Date: {new Date(book.dueDate).toLocaleDateString()}
@@ -80,7 +81,9 @@ const BookDetailsPage = () => {
             {book.description ? (
               <p className="text-gray-700">{book.description}</p>
             ) : (
-              <p className="text-gray-500">No description available for this book.</p>
+              <p className="text-gray-500">
+                No description available for this book.
+              </p>
             )}
           </div>
         )}

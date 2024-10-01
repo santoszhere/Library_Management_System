@@ -22,6 +22,7 @@ import { disconnectSocket, initializeSocket } from "./store/slices/socketSlice";
 import { useEffect } from "react";
 import BookDetailsPage from "./pages/BookDetailsPage";
 import Booksettings from "./pages/Booksettings";
+import Footer from "./components/Footer";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -65,8 +66,8 @@ const App = () => {
             />
           </Route>
         </Route>
-
       </Routes>
+      <Footer />
     </div>
   );
 };

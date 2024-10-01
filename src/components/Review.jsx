@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaPaperPlane, FaPlus, FaMinus, FaEdit, FaTrash } from "react-icons/fa";
 import {
   postReview,
@@ -8,8 +8,11 @@ import {
 } from "../config/AxiosInstance";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 const Review = ({ reviews, bookId }) => {
+  console.log(reviews);
+  const [allReviews, setAllReviews] = useState(reviews);
   const [nestedReview, setNestedReview] = useState({});
   const [replyContent, setReplyContent] = useState({});
   const [editMode, setEditMode] = useState({
@@ -18,7 +21,6 @@ const Review = ({ reviews, bookId }) => {
     content: "",
   });
   const { userData } = useSelector((state) => state.user);
-  const [hoveredReviewId, setHoveredReviewId] = useState(null); // Track hovered review
 
   const fetchNestedReviews = async (reviewId, forceFetch = false) => {
     if (!nestedReview[reviewId] || forceFetch) {
@@ -74,22 +76,45 @@ const Review = ({ reviews, bookId }) => {
 
   const handleSaveEdit = async () => {
     try {
-      const { data } = await editReview(editMode.reviewId, {
+      const { data } = await editReview({
+        reviewId: editMode.reviewId,
         content: editMode.content,
       });
+
       if (data?.data) {
+        setAllReviews((prevReviews) => {
+          return prevReviews.map((review) =>
+            review._id === editMode.reviewId
+              ? { ...review, content: editMode.content }
+              : review
+          );
+        });
+
         setEditMode({ active: false, reviewId: null, content: "" });
+        toast.success(data?.message);
       }
     } catch (error) {
-      console.error("Error editing review");
+      console.error("Error editing review:", error);
+      toast.error("Error editing review");
     }
   };
 
   const handleDeleteClick = async (reviewId) => {
     try {
-      await deleteReview(reviewId);
+      const { data } = await deleteReview(reviewId);
+      if (data?.statusCode === 200) {
+        toast.success(data.message);
+
+        setAllReviews((prevReviews) => {
+          const updatedReviews = prevReviews.filter(
+            (review) => review._id !== reviewId
+          );
+          return updatedReviews;
+        });
+      }
     } catch (error) {
-      console.error("Error deleting review");
+      console.error("Error deleting review:", error);
+      toast.error("Error deleting review");
     }
   };
 
@@ -111,16 +136,14 @@ const Review = ({ reviews, bookId }) => {
     if (hours > 0) return `${hours}h`;
     return `${minutes}m`;
   };
+  useEffect(() => {
+    setAllReviews(allReviews);
+  }, [allReviews]);
 
   return (
     <div className="p-4 bg-gray-100 rounded-lg shadow-md">
-      {reviews?.map((review) => (
-        <div
-          key={review._id}
-          className="relative mb-2"
-          onMouseEnter={() => setHoveredReviewId(review._id)}
-          onMouseLeave={() => setHoveredReviewId(null)}
-        >
+      {allReviews?.map((review) => (
+        <div key={review._id} className="relative mb-2">
           <motion.div
             className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm"
             initial={{ opacity: 0, translateY: -10 }}
@@ -141,36 +164,37 @@ const Review = ({ reviews, bookId }) => {
                   <p className="text-xs text-gray-500 ml-2">
                     {timeAgo(review.createdAt)}
                   </p>
+
                   {review?.hasReplies && (
                     <button
                       className="text-gray-500 hover:text-blue-500 ml-2 text-xs"
                       onClick={() => fetchNestedReviews(review._id)}
                     >
                       {nestedReview[review._id] ? (
-                        <FaMinus size={12} />
+                        <FaMinus size={10} />
                       ) : (
-                        <FaPlus size={12} />
+                        <span className="flex items-center justify-center border-2 px-[2px] rounded-lg font-semibold ">
+                          <FaPlus size={10} />
+                          {review.replyCount}
+                        </span>
                       )}
                     </button>
                   )}
                 </div>
               </div>
 
+              {/* Always visible buttons */}
               <div className="flex space-x-2">
                 {userData?._id === review?.userId._id && (
                   <>
                     <button
-                      className={`text-gray-500 hover:text-blue-500 ${
-                        hoveredReviewId === review._id ? "block" : "hidden"
-                      } mobile-visible`}
+                      className="text-gray-500 hover:text-blue-500"
                       onClick={() => handleEditClick(review)}
                     >
                       <FaEdit size={12} />
                     </button>
                     <button
-                      className={`text-gray-500 hover:text-red-500 ${
-                        hoveredReviewId === review._id ? "block" : "hidden"
-                      } mobile-visible`}
+                      className="text-gray-500 hover:text-red-500"
                       onClick={() => handleDeleteClick(review._id)}
                     >
                       <FaTrash size={12} />

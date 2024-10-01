@@ -79,7 +79,6 @@ const ReviewList = ({ bookId }) => {
         page: currentPage,
         limit: reviewsPerPage,
       });
-      console.log(data, "Main data");
       setTotalReviews(data?.data?.totalCount || 0);
       setTotalPages(data?.data?.totalPages || 1);
       setReviews(data?.data?.reviews || []);
