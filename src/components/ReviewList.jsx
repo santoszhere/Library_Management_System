@@ -147,7 +147,7 @@ const ReviewList = ({ bookId }) => {
       </h2>
 
       {reviews.length > 0 ? (
-        <Review reviews={reviews} />
+        <Review reviews={reviews} bookId={bookId} />
       ) : (
         <p>No reviews yet.</p>
       )}

@@ -1,158 +1,259 @@
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { useState } from "react";
+import { FaPaperPlane, FaPlus, FaMinus, FaEdit, FaTrash } from "react-icons/fa";
 import {
-  FaRegCommentDots,
-  FaPaperPlane,
-  FaEdit,
-  FaTrash,
-  FaPlus,
-  FaMinus,
-} from "react-icons/fa";
-import { postReview, getNestedReviews } from "../config/AxiosInstance";
+  postReview,
+  getNestedReviews,
+  editReview,
+  deleteReview,
+} from "../config/AxiosInstance";
 import { useSelector } from "react-redux";
+import { motion } from "framer-motion";
 
-const Review = ({ reviews }) => {
-  const [expandedReviews, setExpandedReviews] = useState({});
-  const [newReplyContent, setNewReplyContent] = useState("");
+const Review = ({ reviews, bookId }) => {
+  const [nestedReview, setNestedReview] = useState({});
+  const [replyContent, setReplyContent] = useState({});
+  const [editMode, setEditMode] = useState({
+    active: false,
+    reviewId: null,
+    content: "",
+  });
   const { userData } = useSelector((state) => state.user);
+  const [hoveredReviewId, setHoveredReviewId] = useState(null); // Track hovered review
 
-  const toggleReplies = async (reviewId) => {
-    setExpandedReviews((prev) => ({
-      ...prev,
-      [reviewId]: !prev[reviewId],
-    }));
-
-    // Fetch nested reviews on the first click
-    if (!expandedReviews[reviewId]) {
-      await fetchNestedReview(reviewId);
+  const fetchNestedReviews = async (reviewId, forceFetch = false) => {
+    if (!nestedReview[reviewId] || forceFetch) {
+      const { data } = await getNestedReviews(reviewId);
+      setNestedReview((prev) => ({
+        ...prev,
+        [reviewId]: data?.data?.replies || [],
+      }));
+    } else {
+      setNestedReview((prev) => {
+        const { [reviewId]: removed, ...rest } = prev;
+        return rest;
+      });
     }
   };
 
-  const handleReplyChange = (e) => {
-    setNewReplyContent(e.target.value);
+  const handleReplyChange = (e, reviewId) => {
+    setReplyContent((prev) => ({
+      ...prev,
+      [reviewId]: e.target.value,
+    }));
   };
 
   const handleSubmitReply = async (parentReviewId) => {
-    if (newReplyContent.trim() === "") return;
+    const replyText = replyContent[parentReviewId]?.trim();
+    if (!replyText) return;
 
     try {
       const { data } = await postReview({
-        bookId: "yourBookIdHere", // Replace with actual bookId
-        content: newReplyContent,
+        bookId,
+        content: replyText,
         parentReviewId,
       });
       if (data?.data) {
-        toast.success(data?.message);
-        setNewReplyContent(""); // Clear input after posting
-      } else {
-        toast.error("Failed to add reply");
+        setReplyContent((prev) => ({
+          ...prev,
+          [parentReviewId]: "",
+        }));
+        fetchNestedReviews(parentReviewId, true);
       }
     } catch (error) {
-      toast.error("Error adding reply");
+      console.error("Error adding reply");
     }
   };
 
-  const fetchNestedReview = async (reviewId) => {
+  const handleEditClick = (review) => {
+    setEditMode({
+      active: true,
+      reviewId: review._id,
+      content: review.content,
+    });
+  };
+
+  const handleSaveEdit = async () => {
     try {
-      const { data } = await getNestedReviews(reviewId);
-      // Update the review with the fetched nested replies
-      setExpandedReviews((prev) => ({
-        ...prev,
-        [reviewId]: {
-          ...(prev[reviewId] || {}),
-          replies: data?.data || [],
-        },
-      }));
+      const { data } = await editReview(editMode.reviewId, {
+        content: editMode.content,
+      });
+      if (data?.data) {
+        setEditMode({ active: false, reviewId: null, content: "" });
+      }
     } catch (error) {
-      toast.error("Error fetching replies");
+      console.error("Error editing review");
     }
+  };
+
+  const handleDeleteClick = async (reviewId) => {
+    try {
+      await deleteReview(reviewId);
+    } catch (error) {
+      console.error("Error deleting review");
+    }
+  };
+
+  const handleKeyDown = (e, parentReviewId) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmitReply(parentReviewId);
+    }
+  };
+
+  const timeAgo = (date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const days = Math.floor(seconds / 86400);
+
+    if (days > 0) return `${days}d`;
+    if (hours > 0) return `${hours}h`;
+    return `${minutes}m`;
   };
 
   return (
-    <div>
-      {reviews.map((review) => (
+    <div className="p-4 bg-gray-100 rounded-lg shadow-md">
+      {reviews?.map((review) => (
         <div
           key={review._id}
-          className="bg-white border border-gray-300 rounded-lg p-3 mb-3 shadow-sm"
+          className="relative mb-2"
+          onMouseEnter={() => setHoveredReviewId(review._id)}
+          onMouseLeave={() => setHoveredReviewId(null)}
         >
-          <div className="flex justify-between items-center">
-            <div className="flex">
-              <img
-                src={review.userId.avatar}
-                alt={review.userId.username}
-                className="w-10 h-10 rounded-full mr-3"
-              />
-              <div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-semibold text-gray-800">
-                    {review.userId.username}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {new Date(review.createdAt).toLocaleDateString()}
-                  </span>
-                  {review?.replies?.length > 0 && (
+          <motion.div
+            className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm"
+            initial={{ opacity: 0, translateY: -10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center">
+                <img
+                  src={review?.userId.avatar}
+                  alt={review?.userId.username}
+                  className="w-10 h-10 rounded-full border border-gray-200"
+                />
+                <div className="ml-2 flex items-center">
+                  <p className="text-sm font-semibold text-gray-800">
+                    {review?.userId.username}
+                  </p>
+                  <p className="text-xs text-gray-500 ml-2">
+                    {timeAgo(review.createdAt)}
+                  </p>
+                  {review?.hasReplies && (
                     <button
-                      className="text-gray-500 hover:text-blue-500 text-base"
-                      onClick={() => toggleReplies(review._id)}
+                      className="text-gray-500 hover:text-blue-500 ml-2 text-xs"
+                      onClick={() => fetchNestedReviews(review._id)}
                     >
-                      {expandedReviews[review._id] ? <FaMinus /> : <FaPlus />}
+                      {nestedReview[review._id] ? (
+                        <FaMinus size={12} />
+                      ) : (
+                        <FaPlus size={12} />
+                      )}
                     </button>
                   )}
                 </div>
-                <div className="text-base text-gray-600">{review.content}</div>
+              </div>
+
+              <div className="flex space-x-2">
+                {userData?._id === review?.userId._id && (
+                  <>
+                    <button
+                      className={`text-gray-500 hover:text-blue-500 ${
+                        hoveredReviewId === review._id ? "block" : "hidden"
+                      } mobile-visible`}
+                      onClick={() => handleEditClick(review)}
+                    >
+                      <FaEdit size={12} />
+                    </button>
+                    <button
+                      className={`text-gray-500 hover:text-red-500 ${
+                        hoveredReviewId === review._id ? "block" : "hidden"
+                      } mobile-visible`}
+                      onClick={() => handleDeleteClick(review._id)}
+                    >
+                      <FaTrash size={12} />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              {userData?._id === review.userId._id && (
-                <>
-                  <button className="text-gray-500 hover:text-blue-500 text-base">
-                    <FaEdit />
-                  </button>
-                  <button className="text-gray-500 hover:text-red-500 text-base">
-                    <FaTrash />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+            <div className="text-sm text-gray-700 mb-2">{review.content}</div>
 
-          {expandedReviews[review._id] && review.replies.length > 0 && (
-            <div className="ml-4 mt-3 border-l-2 border-gray-200 pl-3">
-              {review.replies.map((reply) => (
-                <Review key={reply._id} reviews={[reply]} />
-              ))}
-            </div>
-          )}
-
-          <div className="mt-3">
-            <label
-              className="flex items-center text-sm text-blue-500 hover:text-blue-700 focus:outline-none cursor-pointer"
-              onClick={() => toggleReplies(review._id)}
+            {/* Nested reviews */}
+            <motion.div
+              initial={
+                nestedReview[review._id]
+                  ? { opacity: 1, height: "auto" }
+                  : { opacity: 0, height: 0 }
+              }
+              animate={
+                nestedReview[review._id]
+                  ? { opacity: 1, height: "auto" }
+                  : { opacity: 0, height: 0 }
+              }
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.4 }}
+              className="overflow-hidden ml-4 mt-2 border-l-2 border-gray-200 pl-2"
             >
-              <FaRegCommentDots className="mr-1" />
-              Reply
-            </label>
-          </div>
+              {nestedReview[review._id] && (
+                <Review reviews={nestedReview[review._id]} bookId={bookId} />
+              )}
+            </motion.div>
 
-          {expandedReviews[review._id] && (
-            <div className="mt-2 flex">
+            {/* Reply input */}
+            <div className="flex mt-2">
               <input
                 type="text"
-                value={newReplyContent}
-                onChange={handleReplyChange}
+                value={replyContent[review._id] || ""}
+                onChange={(e) => handleReplyChange(e, review._id)}
+                onKeyDown={(e) => handleKeyDown(e, review._id)}
                 placeholder="Write a reply..."
-                className="flex-1 p-2 text-sm border border-gray-300 rounded focus:outline-none"
+                className="flex-1 p-1 border border-gray-300 rounded focus:outline-none text-sm"
               />
               <button
                 onClick={() => handleSubmitReply(review._id)}
-                className="ml-2 bg-blue-500 text-white px-3 py-2 rounded text-xs hover:bg-blue-600"
+                className="ml-2 bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-sm"
               >
                 <FaPaperPlane />
               </button>
             </div>
-          )}
+          </motion.div>
         </div>
       ))}
+
+      {editMode.active && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Edit Review</h3>
+            <textarea
+              value={editMode.content}
+              onChange={(e) =>
+                setEditMode({ ...editMode, content: e.target.value })
+              }
+              rows={3}
+              className="w-full border border-gray-300 rounded p-2 mb-4"
+            />
+            <div className="flex justify-end">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={handleSaveEdit}
+              >
+                Save
+              </button>
+              <button
+                className="ml-2 text-gray-600"
+                onClick={() =>
+                  setEditMode({ active: false, reviewId: null, content: "" })
+                }
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

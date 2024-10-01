@@ -43,3 +43,19 @@
   animation: bounce 0.4s ease-in-out infinite alternate;
   animation-delay: 0s;
 }
+
+body {
+  font-family: Arial, sans-serif; /* Clear font family */
+}
+
+.bg-white {
+  background-color: #ffffff; /* Clear background */
+}
+
+.border-gray-300 {
+  border-color: #d1d5db; /* Ensure borders are clearly defined */
+}
+
+.text-gray-700 {
+  color: #374151; /* Darker text color for better readability */
+}
