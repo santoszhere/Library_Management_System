@@ -48,50 +48,80 @@ const About = () => {
           {/* Team Member 1 */}
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <img
-              src="image-1.jpg"
+              src="santosh.jpg"
               alt="Team Member 1"
-              className="w-32 h-32 rounded-full mx-auto mb-4"
+              className="w-32 h-32 rounded-full mx-auto mb-4 object-cover object-top"
             />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              John Doe
+              Santosh Thapa
             </h3>
             <p className="text-gray-600 font-medium mb-4">Founder & CEO</p>
             <p className="text-gray-500">
-              John is the visionary behind the system, ensuring it runs smoothly and provides value to all users. With a passion for technology and education, he leads the team with inspiration.
+              Santosh is the visionary behind the system, ensuring it runs smoothly and provides value to all users. With a passion for technology and education, he leads the team with inspiration.
             </p>
           </div>
 
           {/* Team Member 2 */}
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <img
-              src="image-1.jpg"
+              src="anmol.jpg"
 
               alt="Team Member 2"
               className="w-32 h-32 rounded-full mx-auto mb-4"
             />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Jane Smith
+              Anmol Sikari
             </h3>
             <p className="text-gray-600 font-medium mb-4">Chief Librarian</p>
             <p className="text-gray-500">
-              Jane curates the book collection, ensuring it meets the needs of readers from all backgrounds and interests. With over a decade of experience, she brings a wealth of knowledge to the team.
+              Anmol curates the book collection, ensuring it meets the needs of readers from all backgrounds and interests. With over a decade of experience, she brings a wealth of knowledge to the team.
             </p>
           </div>
 
           {/* Team Member 3 */}
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <img
-              src="image-1.jpg"
+              src="xitiz.jpg"
 
               alt="Team Member 3"
               className="w-32 h-32 rounded-full mx-auto mb-4"
             />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Emily Johnson
+              xitiz
             </h3>
             <p className="text-gray-600 font-medium mb-4">Lead Developer</p>
             <p className="text-gray-500">
-              Emily is responsible for building and maintaining the platform. Her expertise in software development ensures the system runs seamlessly for all users.
+              Xitiz is responsible for building and maintaining the platform. Her expertise in software development ensures the system runs seamlessly for all users.
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <img
+              src="\prabesh.jpg"
+
+              alt="Team Member 3"
+              className="w-32 h-32 rounded-full mx-auto mb-4"
+            />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              prabesh
+            </h3>
+            <p className="text-gray-600 font-medium mb-4">Lead Developer</p>
+            <p className="text-gray-500">
+              prabesh is responsible for building and maintaining the platform. Her expertise in software development ensures the system runs seamlessly for all users.
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <img
+              src="rinzi.jpg"
+
+              alt="Team Member 3"
+              className="w-32 h-32 rounded-full mx-auto mb-4"
+            />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              xitiz
+            </h3>
+            <p className="text-gray-600 font-medium mb-4">Frontend Developer</p>
+            <p className="text-gray-500">
+              Rizi is responsible for building and maintaining the platform. Her expertise in software development ensures the system runs seamlessly for all users.
             </p>
           </div>
         </div>
